@@ -1,0 +1,10 @@
+com\ads\apiseng\util\XmlTypeDetector.class
+com\ads\apiseng\TransformController.class
+com\ads\apiseng\XmlToJsonGateway.class
+com\ads\apiseng\IntegrationConfig$1.class
+com\ads\apiseng\XmlToJsonTransformer.class
+com\ads\apiseng\controller\ContentRouterController.class
+com\ads\apiseng\service\XmlTransformationService.class
+com\ads\apiseng\IntegrationConfig$2.class
+com\ads\apiseng\IntegrationConfig.class
+com\ads\apiseng\SpiappApplication.class
