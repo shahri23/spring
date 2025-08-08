@@ -1,0 +1,769 @@
+# Complete Kubernetes deployment configuration for the monitoring system
+
+---
+# PostgreSQL Database
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-postgres
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring-postgres
+  template:
+    metadata:
+      labels:
+        app: monitoring-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:14
+        env:
+        - name: POSTGRES_DB
+          value: monitoring
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: monitoring-secrets
+              key: postgres-user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: monitoring-secrets
+              key: postgres-password
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: monitoring-postgres
+  namespace: monitoring
+spec:
+  selector:
+    app: monitoring-postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+
+---
+# Redis Cache
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-redis
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring-redis
+  template:
+    metadata:
+      labels:
+        app: monitoring-redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: monitoring-redis
+  namespace: monitoring
+spec:
+  selector:
+    app: monitoring-redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+
+---
+# Central API Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-api
+  namespace: monitoring
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: monitoring-api
+  template:
+    metadata:
+      labels:
+        app: monitoring-api
+    spec:
+      containers:
+      - name: monitoring-api
+        image: your-registry/monitoring-api:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://monitoring-postgres:5432/monitoring"
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: monitoring-secrets
+              key: postgres-user
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: monitoring-secrets
+              key: postgres-password
+        - name: SPRING_REDIS_HOST
+          value: "monitoring-redis"
+        - name: SPRING_REDIS_PORT
+          value: "6379"
+        - name: FILE_STORAGE_PATH
+          value: "/app/storage"
+        - name: FILE_STORAGE_MAX_SIZE
+          value: "1GB"
+        volumeMounts:
+        - name: file-storage
+          mountPath: /app/storage
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: file-storage
+        persistentVolumeClaim:
+          claimName: file-storage-pvc
+
+---
+# API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: monitoring-api
+  namespace: monitoring
+spec:
+  selector:
+    app: monitoring-api
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: ClusterIP
+
+---
+# Web GUI Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-gui
+  namespace: monitoring
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: monitoring-gui
+  template:
+    metadata:
+      labels:
+        app: monitoring-gui
+    spec:
+      containers:
+      - name: monitoring-gui
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: gui-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: gui-content
+          mountPath: /usr/share/nginx/html
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+      volumes:
+      - name: gui-config
+        configMap:
+          name: nginx-config
+      - name: gui-content
+        configMap:
+          name: gui-content
+
+---
+# GUI Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: monitoring-gui
+  namespace: monitoring
+spec:
+  selector:
+    app: monitoring-gui
+  ports:
+  - port: 80
+    targetPort: 80
+  type: LoadBalancer
+
+---
+# Example Java Application with Monitoring
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-java-app
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sample-java-app
+      team: backend-team
+  template:
+    metadata:
+      labels:
+        app: sample-java-app
+        team: backend-team
+    spec:
+      containers:
+      - name: java-app
+        image: your-registry/sample-java-app:latest
+        env:
+        - name: TEAM_NAME
+          value: "backend-team"
+        - name: APP_NAME
+          value: "user-service"
+        - name: CENTRAL_API_URL
+          value: "http://monitoring-api.monitoring:8080"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: CONTAINER_NAME
+          value: "java-app"
+        - name: DUMP_DIRECTORY
+          value: "/tmp/dumps"
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: dumps-volume
+          mountPath: /tmp/dumps
+        - name: listener-jar
+          mountPath: /app/listener-agent.jar
+          subPath: listener-agent.jar
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: dumps-volume
+        emptyDir: {}
+      - name: listener-jar
+        configMap:
+          name: listener-agent
+          defaultMode: 0755
+
+---
+# Secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  name: monitoring-secrets
+  namespace: monitoring
+type: Opaque
+data:
+  postgres-user: bW9uaXRvcmluZ191c2Vy  # monitoring_user
+  postgres-password: c3VwZXJfc2VjcmV0X3Bhc3M=  # super_secret_pass
+
+---
+# PersistentVolumeClaims
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: file-storage-pvc
+  namespace: monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+# ConfigMaps
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: monitoring
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+    
+    http {
+        upstream api {
+            server monitoring-api:8080;
+        }
+        
+        server {
+            listen 80;
+            
+            location / {
+                root /usr/share/nginx/html;
+                try_files $uri $uri/ /index.html;
+            }
+            
+            location /api/ {
+                proxy_pass http://api;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_connect_timeout 300s;
+                proxy_send_timeout 300s;
+                proxy_read_timeout 300s;
+            }
+        }
+    }
+
+---
+# Network Policy for Security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: monitoring-network-policy
+  namespace: monitoring
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  - {}
+
+---
+# RBAC for Monitoring Service
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: monitoring-service-account
+  namespace: monitoring
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: monitoring-cluster-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "nodes", "services"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: monitoring-cluster-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: monitoring-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: monitoring-service-account
+  namespace: monitoring
+
+---
+# HorizontalPodAutoscaler for API
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: monitoring-api-hpa
+  namespace: monitoring
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: monitoring-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# Ingress for External Access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-ingress
+  namespace: monitoring
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - monitoring.yourdomain.com
+    secretName: monitoring-tls
+  rules:
+  - host: monitoring.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: monitoring-gui
+            port:
+              number: 80
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: monitoring-api
+            port:
+              number: 8080
+
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    name: monitoring
+
+---
+# ServiceMonitor for Prometheus Integration
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: monitoring-api-metrics
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: monitoring-api
+  endpoints:
+  - port: http
+    path: /actuator/prometheus
+    interval: 30s
+
+---
+# ConfigMap for Database Schema
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-schema
+  namespace: monitoring
+data:
+  schema.sql: |
+    -- Database schema for monitoring system
+    
+    CREATE TABLE IF NOT EXISTS containers (
+        id VARCHAR(255) PRIMARY KEY,
+        team_name VARCHAR(100) NOT NULL,
+        app_name VARCHAR(100) NOT NULL,
+        pod_name VARCHAR(100) NOT NULL,
+        container_name VARCHAR(100) NOT NULL,
+        host_ip VARCHAR(50),
+        status VARCHAR(20) DEFAULT 'active',
+        last_heartbeat TIMESTAMP,
+        metadata JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_team_app (team_name, app_name),
+        INDEX idx_status (status),
+        INDEX idx_heartbeat (last_heartbeat)
+    );
+    
+    CREATE TABLE IF NOT EXISTS command_queue (
+        id SERIAL PRIMARY KEY,
+        container_id VARCHAR(255) NOT NULL REFERENCES containers(id) ON DELETE CASCADE,
+        command_type VARCHAR(50) NOT NULL,
+        parameters JSONB,
+        status VARCHAR(20) DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        executed_at TIMESTAMP,
+        result JSONB,
+        INDEX idx_container_status (container_id, status),
+        INDEX idx_created_at (created_at)
+    );
+    
+    CREATE TABLE IF NOT EXISTS generated_files (
+        id SERIAL PRIMARY KEY,
+        container_id VARCHAR(255) NOT NULL REFERENCES containers(id) ON DELETE CASCADE,
+        file_type VARCHAR(50) NOT NULL,
+        file_path VARCHAR(500) NOT NULL,
+        file_size BIGINT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP,
+        INDEX idx_container_files (container_id),
+        INDEX idx_expires (expires_at)
+    );
+    
+    -- Create indexes for better performance
+    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_containers_team_app_pod 
+    ON containers(team_name, app_name, pod_name);
+    
+    CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_command_queue_pending 
+    ON command_queue(container_id, status, created_at) 
+    WHERE status = 'pending';
+
+---
+# Job for Database Initialization
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: database-init
+  namespace: monitoring
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: db-init
+        image: postgres:14
+        env:
+        - name: PGHOST
+          value: monitoring-postgres
+        - name: PGPORT
+          value: "5432"
+        - name: PGDATABASE
+          value: monitoring
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: monitoring-secrets
+              key: postgres-user
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: monitoring-secrets
+              key: postgres-password
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "Waiting for PostgreSQL to be ready..."
+          until pg_isready; do
+            sleep 2
+          done
+          echo "PostgreSQL is ready. Executing schema..."
+          psql < /schema/schema.sql
+          echo "Schema initialization completed."
+        volumeMounts:
+        - name: schema
+          mountPath: /schema
+      volumes:
+      - name: schema
+        configMap:
+          name: database-schema
+
+---
+# CronJob for Cleanup Old Files
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup-old-files
+  namespace: monitoring
+spec:
+  schedule: "0 2 * * *"  # Run daily at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: cleanup
+            image: your-registry/monitoring-api:latest
+            env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://monitoring-postgres:5432/monitoring"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: monitoring-secrets
+                  key: postgres-user
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: monitoring-secrets
+                  key: postgres-password
+            command:
+            - /bin/bash
+            - -c
+            - |
+              java -cp /app/monitoring-api.jar \
+                   -Dspring.profiles.active=cleanup \
+                   com.monitoring.api.CleanupApplication
+            volumeMounts:
+            - name: file-storage
+              mountPath: /app/storage
+          volumes:
+          - name: file-storage
+            persistentVolumeClaim:
+              claimName: file-storage-pvc
+
+---
+# Monitoring and Alerting Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: monitoring-system-alerts
+  namespace: monitoring
+spec:
+  groups:
+  - name: monitoring-system
+    rules:
+    - alert: ContainerNotResponding
+      expr: |
+        (time() - container_last_heartbeat_timestamp) > 300
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Container {{ $labels.container_id }} not responding"
+        description: "Container {{ $labels.container_id }} in team {{ $labels.team }} has not sent heartbeat for more than 5 minutes"
+    
+    - alert: HighCommandFailureRate
+      expr: |
+        (
+          rate(monitoring_commands_failed_total[5m]) / 
+          rate(monitoring_commands_total[5m])
+        ) > 0.1
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High command failure rate detected"
+        description: "Command failure rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+    
+    - alert: DatabaseConnectionFailure
+      expr: monitoring_database_connections_active == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Database connection failure"
+        description: "Monitoring API has lost connection to the database"
+
+---
+# PodDisruptionBudget for High Availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: monitoring-api-pdb
+  namespace: monitoring
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: monitoring-api
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: monitoring-gui-pdb
+  namespace: monitoring
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: monitoring-gui
