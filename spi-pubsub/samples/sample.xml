@@ -1,0 +1,251 @@
+<!-- Customer XML Sample -->
+<?xml version="1.0" encoding="UTF-8"?>
+<customer>
+    <id>12345</id>
+    <name>John Smith</name>
+    <email>john.smith@example.com</email>
+    <phone>+1-555-0123</phone>
+    <address>
+        <street>123 Main Street</street>
+        <city>New York</city>
+        <state>NY</state>
+        <zipCode>10001</zipCode>
+        <country>USA</country>
+    </address>
+    <preferences>
+        <newsletter>true</newsletter>
+        <promotions>false</promotions>
+        <language>en</language>
+    </preferences>
+    <dateCreated>2024-01-15T10:30:00Z</dateCreated>
+    <customerType>premium</customerType>
+</customer>
+
+<!-- Order XML Sample -->
+<?xml version="1.0" encoding="UTF-8"?>
+<order>
+    <orderId>ORD-2024-001234</orderId>
+    <customerId>12345</customerId>
+    <issueDate>2024-08-16T15:00:00Z</issueDate>
+    <dueDate>2024-09-15T23:59:59Z</dueDate>
+    <status>pending</status>
+    <billTo>
+        <name>John Smith</name>
+        <company>Smith Industries</company>
+        <address>
+            <street>123 Main Street</street>
+            <city>New York</city>
+            <state>NY</state>
+            <zipCode>10001</zipCode>
+            <country>USA</country>
+        </address>
+    </billTo>
+    <lineItems>
+        <lineItem>
+            <productId>PROD-001</productId>
+            <description>Premium Widget</description>
+            <quantity>2</quantity>
+            <unitPrice>99.99</unitPrice>
+            <totalPrice>199.98</totalPrice>
+        </lineItem>
+        <lineItem>
+            <productId>PROD-002</productId>
+            <description>Standard Widget</description>
+            <quantity>1</quantity>
+            <unitPrice>49.99</unitPrice>
+            <totalPrice>49.99</totalPrice>
+        </lineItem>
+    </lineItems>
+    <subtotal>249.97</subtotal>
+    <tax>
+        <rate>0.08</rate>
+        <amount>19.98</amount>
+    </tax>
+    <shipping>15.00</shipping>
+    <totalAmount>284.95</totalAmount>
+    <paymentTerms>Net 30</paymentTerms>
+    <notes>Thank you for your business!</notes>
+</invoice>
+
+<!-- User XML Sample -->
+<?xml version="1.0" encoding="UTF-8"?>
+<user>
+    <userId>USR-12345</userId>
+    <username>johnsmith</username>
+    <email>john.smith@example.com</email>
+    <firstName>John</firstName>
+    <lastName>Smith</lastName>
+    <role>customer</role>
+    <status>active</status>
+    <profile>
+        <dateOfBirth>1985-03-15</dateOfBirth>
+        <gender>male</gender>
+        <phone>+1-555-0123</phone>
+        <timezone>America/New_York</timezone>
+        <language>en</language>
+        <avatar>https://example.com/avatars/johnsmith.jpg</avatar>
+    </profile>
+    <permissions>
+        <permission>read</permission>
+        <permission>write</permission>
+        <permission>order</permission>
+    </permissions>
+    <preferences>
+        <notifications>
+            <email>true</email>
+            <sms>false</sms>
+            <push>true</push>
+        </notifications>
+        <marketing>
+            <newsletter>true</newsletter>
+            <promotions>false</promotions>
+        </marketing>
+    </preferences>
+    <dateCreated>2024-01-15T10:30:00Z</dateCreated>
+    <lastLogin>2024-08-16T09:15:00Z</lastLogin>
+</user>
+
+<!-- Generic/Person XML Sample -->
+<?xml version="1.0" encoding="UTF-8"?>
+<person>
+    <id>PERSON-001</id>
+    <personalInfo>
+        <firstName>Jane</firstName>
+        <lastName>Doe</lastName>
+        <middleName>Marie</middleName>
+        <title>Ms.</title>
+        <dateOfBirth>1990-07-22</dateOfBirth>
+        <ssn>***-**-****</ssn>
+    </personalInfo>
+    <contactInfo>
+        <primaryEmail>jane.doe@email.com</primaryEmail>
+        <secondaryEmail>j.doe@work.com</secondaryEmail>
+        <homePhone>+1-555-0199</homePhone>
+        <workPhone>+1-555-0200</workPhone>
+        <mobilePhone>+1-555-0201</mobilePhone>
+    </contactInfo>
+    <addresses>
+        <homeAddress>
+            <street>456 Oak Avenue</street>
+            <apt>Unit 2B</apt>
+            <city>Boston</city>
+            <state>MA</state>
+            <zipCode>02101</zipCode>
+            <country>USA</country>
+            <isPrimary>true</isPrimary>
+        </homeAddress>
+        <workAddress>
+            <street>789 Business Blvd</street>
+            <suite>Suite 100</suite>
+            <city>Cambridge</city>
+            <state>MA</state>
+            <zipCode>02139</zipCode>
+            <country>USA</country>
+            <isPrimary>false</isPrimary>
+        </workAddress>
+    </addresses>
+    <employment>
+        <company>Tech Solutions Inc</company>
+        <position>Software Engineer</position>
+        <department>Engineering</department>
+        <startDate>2022-03-01</startDate>
+        <salary>85000</salary>
+        <currency>USD</currency>
+    </employment>
+    <emergencyContact>
+        <name>Robert Doe</name>
+        <relationship>spouse</relationship>
+        <phone>+1-555-0202</phone>
+        <email>robert.doe@email.com</email>
+    </emergencyContact>
+    <metadata>
+        <createdBy>SYSTEM</createdBy>
+        <createdDate>2024-05-10T08:00:00Z</createdDate>
+        <lastModifiedBy>ADMIN</lastModifiedBy>
+        <lastModifiedDate>2024-08-10T14:30:00Z</lastModifiedDate>
+        <version>3</version>
+    </metadata>
+</person></customerId>
+    <orderDate>2024-08-16T14:25:00Z</orderDate>
+    <status>confirmed</status>
+    <items>
+        <item>
+            <productId>PROD-001</productId>
+            <productName>Premium Widget</productName>
+            <quantity>2</quantity>
+            <unitPrice>99.99</unitPrice>
+            <totalPrice>199.98</totalPrice>
+        </item>
+        <item>
+            <productId>PROD-002</productId>
+            <productName>Standard Widget</productName>
+            <quantity>1</quantity>
+            <unitPrice>49.99</unitPrice>
+            <totalPrice>49.99</totalPrice>
+        </item>
+    </items>
+    <shipping>
+        <method>express</method>
+        <cost>15.00</cost>
+        <address>
+            <street>123 Main Street</street>
+            <city>New York</city>
+            <state>NY</state>
+            <zipCode>10001</zipCode>
+        </address>
+    </shipping>
+    <payment>
+        <method>credit_card</method>
+        <last4>1234</last4>
+        <amount>264.97</amount>
+    </payment>
+    <totalAmount>264.97</totalAmount>
+</order>
+
+<!-- Product XML Sample -->
+<?xml version="1.0" encoding="UTF-8"?>
+<product>
+    <productId>PROD-001</productId>
+    <name>Premium Widget</name>
+    <description>High-quality widget with advanced features</description>
+    <category>Electronics</category>
+    <subcategory>Widgets</subcategory>
+    <price>99.99</price>
+    <currency>USD</currency>
+    <stock>
+        <available>250</available>
+        <reserved>15</reserved>
+        <warehouse>WH-NYC-01</warehouse>
+    </stock>
+    <specifications>
+        <weight>2.5</weight>
+        <dimensions>
+            <length>10.0</length>
+            <width>8.0</width>
+            <height>3.0</height>
+            <unit>cm</unit>
+        </dimensions>
+        <color>black</color>
+        <material>aluminum</material>
+    </specifications>
+    <images>
+        <image>https://example.com/images/prod-001-1.jpg</image>
+        <image>https://example.com/images/prod-001-2.jpg</image>
+    </images>
+    <tags>
+        <tag>premium</tag>
+        <tag>electronics</tag>
+        <tag>widget</tag>
+    </tags>
+    <dateCreated>2024-01-01T09:00:00Z</dateCreated>
+    <lastUpdated>2024-08-15T16:45:00Z</lastUpdated>
+    <active>true</active>
+</product>
+
+<!-- Invoice XML Sample -->
+<?xml version="1.0" encoding="UTF-8"?>
+<invoice>
+    <invoiceId>INV-2024-001234</invoiceId>
+    <invoiceNumber>2024001234</invoiceNumber>
+    <orderId>ORD-2024-001234</orderId>
+    <customerId>12345
