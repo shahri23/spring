@@ -41,28 +41,183 @@ A Spring Integration application demonstrating Enterprise Integration Patterns w
 
 ## 🏗️ Architecture
 
+### Microservices & Kubernetes Deployment
+
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐
-│   XML Input     │────│  Content Router  │────│   Specialized       │
-│                 │    │                  │    │   Transformers      │
-└─────────────────┘    └──────────────────┘    └─────────────────────┘
-                                │                          │
-                                │                          │
-                       ┌────────▼────────┐        ┌───────▼────────┐
-                       │   Pub/Sub       │        │   JSON Output  │
-                       │   Publisher     │        │                │
-                       └────────┬────────┘        └────────────────┘
-                                │
-                    ┌───────────▼─────────────┐
-                    │     Subscribers         │
-                    │ • Audit    • Billing    │
-                    │ • Notify   • Inventory  │
-                    │ • Analytics • Catalog   │
-                    │ • + 6 more services     │
-                    └─────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          Kubernetes Cluster                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐    │
+│  │   XML Input     │────│  Content Router  │────│   Specialized       │    │
+│  │   (Frontend)    │    │  (SPI-App Pod)   │    │   Transformers      │    │
+│  └─────────────────┘    └──────────────────┘    └─────────────────────┘    │
+│                                  │                          │               │
+│                                  │                          │               │
+│                         ┌────────▼────────┐        ┌───────▼────────┐      │
+│                         │   Pub/Sub       │        │   JSON Output  │      │
+│                         │   Publisher     │        │   (API Gateway) │      │
+│                         └────────┬────────┘        └────────────────┘      │
+│                                  │                                          │
+│          ┌───────────────────────▼─────────────────────────┐                │
+│          │              Message Broker (Kafka/RabbitMQ)   │                │
+│          └───────────────────────┬─────────────────────────┘                │
+│                                  │                                          │
+│    ┌─────────────────────────────▼─────────────────────────────┐            │
+│    │                    Subscriber Pods                        │            │
+│    │                                                           │            │
+│    │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │            │
+│    │  │ Audit Pod   │  │ Billing Pod │  │ Notify Pod  │      │            │
+│    │  │             │  │             │  │             │      │            │
+│    │  └─────────────┘  └─────────────┘  └─────────────┘      │            │
+│    │                                                           │            │
+│    │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │            │
+│    │  │Analytics Pod│  │Inventory Pod│  │ Catalog Pod │      │            │
+│    │  │             │  │             │  │             │      │            │
+│    │  └─────────────┘  └─────────────┘  └─────────────┘      │            │
+│    │                                                           │            │
+│    │          + 6 More Subscriber Service Pods                │            │
+│    └───────────────────────────────────────────────────────────┘            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## 📋 Configuration
+## � Kubernetes & Microservices Deployment
+
+### Pod Architecture
+
+#### 🎯 **SPI Integration Pod (Frontend)**
+```yaml
+# spi-app-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spi-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: spi-app
+  template:
+    metadata:
+      labels:
+        app: spi-app
+    spec:
+      containers:
+      - name: spi-app
+        image: spi-app:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "kubernetes"
+        - name: MESSAGE_BROKER_URL
+          value: "kafka-service:9092"
+```
+
+#### 📡 **Subscriber Service Pods**
+Each subscriber can run as an independent microservice:
+
+```yaml
+# audit-service-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audit-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: audit-service
+  template:
+    metadata:
+      labels:
+        app: audit-service
+    spec:
+      containers:
+      - name: audit-service
+        image: audit-service:latest
+        ports:
+        - containerPort: 8081
+        env:
+        - name: TOPICS
+          value: "xml.processed,customer.events,order.events"
+        - name: MESSAGE_BROKER_URL
+          value: "kafka-service:9092"
+```
+
+### 🔗 **Inter-Pod Communication**
+
+#### Message Broker Options:
+1. **Apache Kafka** - High throughput, distributed streaming
+2. **RabbitMQ** - Reliable message queuing
+3. **Redis Pub/Sub** - Lightweight, fast messaging
+4. **Google Pub/Sub** - Cloud-native messaging (GKE)
+5. **Azure Service Bus** - Enterprise messaging (AKS)
+
+#### Service Discovery:
+- **Kubernetes DNS** - Automatic service discovery
+- **Spring Cloud Discovery** - Eureka/Consul integration
+- **Istio Service Mesh** - Advanced traffic management
+
+### 🎛️ **Scalability Benefits**
+
+| Component | Scaling Strategy | Reason |
+|-----------|------------------|---------|
+| **SPI-App Pod** | Horizontal (3-5 replicas) | Handle XML processing load |
+| **Audit Service** | Horizontal (2-3 replicas) | High-volume event logging |
+| **Billing Service** | Vertical + Horizontal | CPU-intensive calculations |
+| **Notification Service** | Horizontal (5-10 replicas) | High-volume notifications |
+| **Analytics Service** | Vertical | Memory-intensive data processing |
+| **Inventory Service** | Horizontal | Real-time stock updates |
+
+### 🔧 Configuration per Environment
+
+#### Development (Single Node)
+```yaml
+spi-app:
+  pubsub:
+    provider: "embedded"  # In-memory messaging
+    subscribers:
+      audit:
+        enabled: true
+        async: false      # Synchronous for debugging
+```
+
+#### Staging (Multi-Pod)
+```yaml
+spi-app:
+  pubsub:
+    provider: "rabbitmq"
+    broker-url: "rabbitmq-service:5672"
+    subscribers:
+      audit:
+        enabled: true
+        async: true
+        replicas: 2
+```
+
+#### Production (Kubernetes)
+```yaml
+spi-app:
+  pubsub:
+    provider: "kafka"
+    broker-url: "kafka-cluster:9092"
+    subscribers:
+      audit:
+        enabled: true
+        async: true
+        replicas: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+```
+
+## �📋 Configuration
 
 ### application.yml Structure
 
@@ -221,22 +376,127 @@ curl http://localhost:8080/api/management/config/status
 
 ## 📊 Pub/Sub Subscribers
 
-The application includes 12 sample subscriber services:
+### 🏢 **Distributed Microservices Architecture**
 
-| Subscriber | Purpose | Topics | Async |
-|------------|---------|---------|-------|
-| **Audit** | System auditing | xml.processed, customer.events, order.events | ✅ |
-| **Notification** | Email/SMS alerts | customer.events, order.events | ✅ |
-| **Analytics** | Metrics collection | xml.processed, product.events | ✅ |
-| **Inventory** | Stock management | order.events, product.events | ✅ |
-| **Billing** | Invoice generation | order.events, customer.events | ❌ |
-| **Catalog** | Product updates | product.events | ❌ |
-| **Pricing** | Price calculations | product.events | ✅ |
-| **Accounting** | Financial records | order.events | ✅ |
-| **Payment** | Payment processing | order.events | ❌ |
-| **Archive** | Data archival | xml.processed | ✅ |
-| **Authentication** | User auth updates | customer.events | ❌ |
-| **Profile** | User profile sync | customer.events | ✅ |
+The application includes 12 sample subscriber services that can run as **independent pods**:
+
+| Subscriber | Purpose | Topics | Async | **Pod Resources** | **Scaling** |
+|------------|---------|---------|-------|------------------|-------------|
+| **Audit** | System auditing | xml.processed, customer.events, order.events | ✅ | 256Mi/100m CPU | 2-3 replicas |
+| **Notification** | Email/SMS alerts | customer.events, order.events | ✅ | 512Mi/200m CPU | 5-10 replicas |
+| **Analytics** | Metrics collection | xml.processed, product.events | ✅ | 1Gi/500m CPU | 2-4 replicas |
+| **Inventory** | Stock management | order.events, product.events | ✅ | 512Mi/300m CPU | 3-5 replicas |
+| **Billing** | Invoice generation | order.events, customer.events | ❌ | 1Gi/1000m CPU | 2-3 replicas |
+| **Catalog** | Product updates | product.events | ❌ | 256Mi/100m CPU | 1-2 replicas |
+| **Pricing** | Price calculations | product.events | ✅ | 512Mi/400m CPU | 2-3 replicas |
+| **Accounting** | Financial records | order.events | ✅ | 512Mi/300m CPU | 2-3 replicas |
+| **Payment** | Payment processing | order.events | ❌ | 1Gi/800m CPU | 3-5 replicas |
+| **Archive** | Data archival | xml.processed | ✅ | 2Gi/200m CPU | 1-2 replicas |
+| **Authentication** | User auth updates | customer.events | ❌ | 256Mi/150m CPU | 2-4 replicas |
+| **Profile** | User profile sync | customer.events | ✅ | 256Mi/100m CPU | 1-2 replicas |
+
+### 🚀 **Microservices Benefits**
+
+#### ✅ **Independent Scaling**
+- Scale each service based on its specific load
+- High-volume services (notifications) can have more replicas
+- Resource-intensive services (analytics) get more CPU/memory
+
+#### ✅ **Fault Isolation**
+- Failure in one subscriber doesn't affect others
+- Circuit breaker patterns prevent cascade failures
+- Individual service restarts without downtime
+
+#### ✅ **Technology Diversity**
+- Each service can use different tech stacks
+- Audit service → Go for performance
+- Analytics service → Python for ML libraries
+- Billing service → Java for enterprise features
+
+#### ✅ **Team Ownership**
+- Different teams can own different services
+- Independent deployment cycles
+- Separate monitoring and alerting per service
+
+### 🔍 **Distributed Monitoring**
+
+#### Pod-Level Metrics
+```bash
+# Monitor SPI App (Integration Pod)
+kubectl top pod -l app=spi-app
+
+# Monitor individual subscriber pods
+kubectl top pod -l app=audit-service
+kubectl top pod -l app=billing-service
+kubectl top pod -l app=notification-service
+```
+
+#### Service Mesh Observability
+```yaml
+# Istio service mesh monitoring
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: spi-app
+spec:
+  hosts:
+  - spi-app
+  http:
+  - match:
+    - uri:
+        prefix: "/api"
+    route:
+    - destination:
+        host: spi-app
+        subset: v1
+    timeout: 30s
+    retries:
+      attempts: 3
+```
+
+#### Distributed Tracing
+- **Jaeger** - Request tracing across pods
+- **Zipkin** - Microservices performance monitoring
+- **Spring Cloud Sleuth** - Automatic trace correlation
+
+### 🛡️ **Security & Networking**
+
+#### Pod-to-Pod Communication
+```yaml
+# Network policies for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: spi-app-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: spi-app
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: api-gateway
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: kafka
+    ports:
+    - protocol: TCP
+      port: 9092
+```
+
+#### Service Authentication
+- **OAuth 2.0** - JWT tokens for inter-service auth
+- **mTLS** - Mutual TLS for secure communication
+- **Kubernetes RBAC** - Role-based access control
 
 ## 🎛️ Configuration Examples
 
