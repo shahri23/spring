@@ -1,15 +1,18 @@
 
-C:\Users\HP>curl -X POST "http://localhost:8080/api/management/config/pubsub/toggle?enabled=true"
-{"message":"Pub/Sub enabled","enabled":true,"timestamp":1755383590236,"status":"success"}
-
-
-
-
 # Enhanced SPI-PubSub: Configurable XML Processing with Pub/Sub
 
 A Spring Integration application demonstrating Enterprise Integration Patterns with configurable content-based routing, XML-to-JSON transformation, and publish/subscribe messaging.
 
 **🚀 Built with Spring Boot 3.5.4 & Java 17 - Latest Enterprise-Grade Stack**
+
+## 🚨 **Quick Console Fix**
+
+To see "Publishing to subscribers" messages:
+1. **Run in dedicated window:** `java -jar target\spi-app.jar`
+2. **Test in separate window:** `POST /api/management/config/pubsub/toggle?enabled=true`
+3. **Watch first window** for subscriber notifications
+
+**[📖 Full instructions below ⬇️](#running-in-foreground-mode)**
 
 ## 🚀 Features
 
@@ -41,45 +44,27 @@ A Spring Integration application demonstrating Enterprise Integration Patterns w
 
 ## 🏗️ Architecture
 
-### Microservices & Kubernetes Deployment
-
+### Demo Mode Architecture
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          Kubernetes Cluster                                │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐    │
-│  │   XML Input     │────│  Content Router  │────│   Specialized       │    │
-│  │   (Frontend)    │    │  (SPI-App Pod)   │    │   Transformers      │    │
-│  └─────────────────┘    └──────────────────┘    └─────────────────────┘    │
-│                                  │                          │               │
-│                                  │                          │               │
-│                         ┌────────▼────────┐        ┌───────▼────────┐      │
-│                         │   Pub/Sub       │        │   JSON Output  │      │
-│                         │   Publisher     │        │   (API Gateway) │      │
-│                         └────────┬────────┘        └────────────────┘      │
-│                                  │                                          │
-│          ┌───────────────────────▼─────────────────────────┐                │
-│          │              Message Broker (Kafka/RabbitMQ)   │                │
-│          └───────────────────────┬─────────────────────────┘                │
-│                                  │                                          │
-│    ┌─────────────────────────────▼─────────────────────────────┐            │
-│    │                    Subscriber Pods                        │            │
-│    │                                                           │            │
-│    │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │            │
-│    │  │ Audit Pod   │  │ Billing Pod │  │ Notify Pod  │      │            │
-│    │  │             │  │             │  │             │      │            │
-│    │  └─────────────┘  └─────────────┘  └─────────────┘      │            │
-│    │                                                           │            │
-│    │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │            │
-│    │  │Analytics Pod│  │Inventory Pod│  │ Catalog Pod │      │            │
-│    │  │             │  │             │  │             │      │            │
-│    │  └─────────────┘  └─────────────┘  └─────────────┘      │            │
-│    │                                                           │            │
-│    │          + 6 More Subscriber Service Pods                │            │
-│    └───────────────────────────────────────────────────────────┘            │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    SPI-App (Demo Mode)                         │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────┐    ┌──────────────┐    ┌─────────────────────┐    │
+│  │XML Input│────│Content Router│────│Specialized Transform│    │
+│  └─────────┘    └──────────────┘    └─────────────────────┘    │
+│                         │                        │             │
+│                 ┌───────▼────────┐       ┌───────▼───────┐     │
+│                 │   Pub/Sub      │       │ JSON Output   │     │
+│                 │   Publisher    │       │ (Response)    │     │
+│                 └───────┬────────┘       └───────────────┘     │
+│                         │                                      │
+│  ┌─────────────────────▼─────────────────────────┐            │
+│  │           Mock Subscribers (Console)          │            │
+│  │  Audit • Billing • Notification • Analytics  │            │
+│  │  Inventory • Shipping • Catalog • Pricing    │            │
+│  │  Accounting • Payment • Archive • Profile     │            │
+│  └───────────────────────────────────────────────┘            │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## � Kubernetes & Microservices Deployment
@@ -254,15 +239,12 @@ spi-app:
 
 ## 🔧 Quick Start
 
-### 1. Prerequisites
-```bash
+### Prerequisites
 - Java 17+
 - Maven 3.6+
 - curl (for testing)
-- jq (optional, for JSON formatting)
-```
 
-### 2. Build and Run
+### Build and Run
 ```bash
 git clone <repository>
 cd spi-pubsub
@@ -270,108 +252,90 @@ mvn clean package
 java -jar target/spi-app.jar
 ```
 
-### 3. Verify Installation
-```bash
-curl http://localhost:8080/api/management/health
-curl http://localhost:8080/api/management/config/status
+## 🖥️ Running in Foreground Mode
+
+**To see "Publishing to subscribers" messages:**
+
+### Step 1: Open Dedicated Console
+Open Command Prompt or PowerShell for running the app
+
+### Step 2: Start Application
+```cmd
+cd d:\downloads\github\spring\spi-pubsub
+java -jar target\spi-app.jar
+```
+
+### Step 3: Open Second Console
+Open another window for testing commands
+
+### Step 4: Test and Watch
+**In second window:**
+```powershell
+# Enable Pub/Sub
+Invoke-RestMethod -Uri "http://localhost:8080/api/management/config/pubsub/toggle?enabled=true" -Method POST
+
+# Send XML
+Invoke-RestMethod -Uri "http://localhost:8080/api/transform" -Method POST -ContentType "application/xml" -Body '<customer><id>DEMO-001</id><name>Demo Customer</name><email>demo@example.com</email></customer>'
+```
+
+**Expected output in first window:**
+```
+📨 Content Router Input Channel - Received: <customer><id>DEMO-001</id>...
+🎯 === CUSTOMER PROCESSING COMPLETE ===
+📄 Result: {"id":"DEMO-001","name":"Demo Customer","email":"demo@example.com"}
+
+Publishing to subscribers for topic: customer
+Notifying subscriber: audit with content: {"id":"DEMO-001"...}
+Notifying subscriber: notification with content: {"id":"DEMO-001"...}
+Notifying subscriber: analytics with content: {"id":"DEMO-001"...}
 ```
 
 ## 📝 API Endpoints
 
-### Core Processing
-- `POST /api/transform` - Original XML→JSON transformer
-- `POST /api/router/route` - Content routing
-- `GET /api/router/status` - Router status
+**Total: 12 endpoints across 3 controllers**
 
-### Configuration Management
-- `GET /api/management/config/status` - View current configuration
+### Core Processing (2 endpoints)
+- `POST /api/transform` - XML→JSON transformation
+- `GET /api/health` - Basic health check
+
+### Content Router (2 endpoints)  
+- `GET /api/router/status` - Router status
+- `POST /api/router/route` - Content routing
+
+### Configuration Management (8 endpoints)
+- `GET /api/management/config/status` - Current configuration
 - `POST /api/management/config/pubsub/toggle` - Toggle PubSub
 - `POST /api/management/config/routing/toggle` - Toggle routing
 - `GET /api/management/config/export` - Export configuration
 - `POST /api/management/config/reload` - Reload configuration
+- `GET /api/management/health` - Comprehensive health
+- `GET /api/management/pubsub/status` - PubSub monitoring
 
-### Monitoring & Health
-- `GET /api/management/health` - Comprehensive health check
-- `GET /api/management/pubsub/status` - Pub/Sub status monitoring
+## 🧪 Quick Testing
 
-## 🧪 Testing
-
-### Automated Testing
-Run the complete test suite:
-```bash
-# Windows
-test-script.bat
-
-# Linux/Mac
-chmod +x test-script.sh
-./test-script.sh
+### Health Check
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/management/health" -Method GET
 ```
 
-**✅ All 10 tests should pass with 100% success rate!**
-
-## 🏆 **Latest Updates & Features**
-
-### 🚀 **Spring Boot 3.5.4 - Latest Enterprise Features**
-- **Enhanced Performance** - Improved startup time and memory usage
-- **Security Updates** - Latest security patches and features  
-- **Java 17 Compatibility** - Optimized for modern Java features
-- **Configuration Management** - Advanced YAML-based configuration
-
-### ✅ **Comprehensive Testing Suite**
-- **10 Automated Tests** - Full endpoint coverage
-- **100% Success Rate** - All functionality verified
-- **Cross-Platform Scripts** - Windows (.bat) and Unix (.sh)
-- **Real-time Monitoring** - Health and status endpoints
-
-### 🎛️ **Zero-Code Configuration**
-- **YAML Toggle Control** - Enable/disable features without coding
-- **Runtime API Changes** - Dynamic configuration via REST endpoints
-- **Environment-Specific** - Different configs per deployment
-- **Feature Flag Support** - A/B testing and gradual rollouts
-
-### Manual Testing Examples
-
-#### Customer XML Processing
-```bash
-curl -X POST http://localhost:8080/api/transform \
-  -H "Content-Type: application/xml" \
-  -d '<?xml version="1.0" encoding="UTF-8"?>
-<customer>
-    <id>12345</id>
-    <name>John Smith</name>
-    <email>john.smith@example.com</email>
-    <address>
-        <street>123 Main Street</street>
-        <city>New York</city>
-        <state>NY</state>
-        <zipCode>10001</zipCode>
-    </address>
-</customer>'
+### Enable PubSub
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/management/config/pubsub/toggle?enabled=true" -Method POST
 ```
 
-#### Order XML Processing
-```bash
-curl -X POST http://localhost:8080/api/transform \
-  -H "Content-Type: application/xml" \
-  -d '<?xml version="1.0" encoding="UTF-8"?>
-<order>
-    <orderId>ORD-2024-001234</orderId>
-    <customerId>12345</customerId>
-    <status>confirmed</status>
-    <totalAmount>199.98</totalAmount>
-</order>'
+### Test Customer XML
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/transform" -Method POST -ContentType "application/xml" -Body '<customer><id>12345</id><name>John Smith</name><email>john@example.com</email></customer>'
 ```
 
-#### Configuration Changes
-```bash
-# Enable/disable PubSub
-curl -X POST "http://localhost:8080/api/management/config/pubsub/toggle?enabled=true"
+### Test Order XML
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/transform" -Method POST -ContentType "application/xml" -Body '<order><orderId>ORD-001</orderId><customerId>12345</customerId><status>confirmed</status><totalAmount>199.98</totalAmount></order>'
+```
 
-# Enable/disable routing
-curl -X POST "http://localhost:8080/api/management/config/routing/toggle?enabled=false"
-
-# Check current status
-curl http://localhost:8080/api/management/config/status
+### Check PubSub Status
+```powershell
+Invoke-RestMethod -Uri "http://localhost:8080/api/management/pubsub/status" -Method GET
 ```
 
 ## 📊 Pub/Sub Subscribers
@@ -544,6 +508,8 @@ Watch the application logs to see:
 - Subscriber processing
 
 ### Health Endpoints
+
+**Linux/Mac (bash):**
 ```bash
 # Comprehensive health check
 curl http://localhost:8080/api/management/health
@@ -552,6 +518,30 @@ curl http://localhost:8080/api/management/health
 curl http://localhost:8080/api/management/config/status
 
 # PubSub status
+curl http://localhost:8080/api/management/pubsub/status
+```
+
+**Windows (PowerShell):**
+```powershell
+# Comprehensive health check
+Invoke-RestMethod -Uri "http://localhost:8080/api/management/health" -Method GET
+
+# Configuration status
+Invoke-RestMethod -Uri "http://localhost:8080/api/management/config/status" -Method GET
+
+# PubSub status
+Invoke-RestMethod -Uri "http://localhost:8080/api/management/pubsub/status" -Method GET
+```
+
+**Windows (Command Prompt - CMD):**
+```cmd
+REM Comprehensive health check
+curl http://localhost:8080/api/management/health
+
+REM Configuration status
+curl http://localhost:8080/api/management/config/status
+
+REM PubSub status
 curl http://localhost:8080/api/management/pubsub/status
 ```
 
@@ -611,6 +601,94 @@ For questions or issues:
 2. Use the health endpoints to verify system status
 3. Review configuration with `/api/management/config/status`
 4. Test with sample XML files provided
+
+### 🔧 **Common Issues & Solutions**
+
+#### **❌ Console Messages Not Visible**
+**Problem:** You can process XML successfully but don't see "Publishing to subscribers" messages.
+
+**Solution:** The application must run in **foreground mode** in a dedicated console window:
+
+1. **Stop any background processes:**
+   ```cmd
+   jps
+   taskkill /F /PID <process_id>
+   ```
+
+2. **Open dedicated console window:**
+   - Open **new** Command Prompt or PowerShell
+   - Navigate to project: `cd d:\downloads\github\spring\spi-pubsub`
+
+3. **Run in foreground:**
+   ```cmd
+   java -jar target\spi-app.jar
+   ```
+
+4. **Test in SEPARATE window:**
+   ```powershell
+   # In a different PowerShell window:
+   Invoke-RestMethod -Uri "http://localhost:8080/api/management/config/pubsub/toggle?enabled=true" -Method POST
+   Invoke-RestMethod -Uri "http://localhost:8080/api/transform" -Method POST -ContentType "application/xml" -Body '<customer><id>TEST</id><name>Test</name></customer>'
+   ```
+
+5. **Watch first window for messages:**
+   ```
+   Publishing to subscribers for topic: customer
+   Notifying subscriber: audit with content: {...}
+   Notifying subscriber: notification with content: {...}
+   ```
+
+#### **404 Not Found Errors**
+If you get a 404 error, ensure you're using the correct endpoint paths:
+
+❌ **Incorrect:**
+```bash
+curl -X GET http://localhost:8080/api/config/status
+# Response: {"timestamp":1755388536567,"status":404,"error":"Not Found"}
+```
+
+✅ **Correct:**
+```bash
+curl -X GET http://localhost:8080/api/management/config/status
+# Response: {"routing":{"enabled":true},"channels":{...},"pubsub":{...}}
+```
+
+#### **Port 8080 Already in Use**
+
+**Windows Command Prompt (CMD):**
+```cmd
+REM Find the process using port 8080
+netstat -ano | findstr :8080
+
+REM Stop the process (replace PID with actual process ID)
+taskkill /PID <process_id> /F
+
+REM Then restart your application
+java -jar target/spi-app.jar
+```
+
+**Windows PowerShell:**
+```powershell
+# Find the process using port 8080
+netstat -ano | findstr :8080
+
+# Stop the process (replace PID with actual process ID)
+taskkill /PID <process_id> /F
+
+# Then restart your application
+java -jar target/spi-app.jar
+```
+
+#### **Application Won't Start**
+1. Ensure Java 17+ is installed: `java -version`
+2. Rebuild the application: `mvn clean package`
+3. Check for port conflicts: `netstat -ano | findstr :8080`
+
+#### **Endpoint Quick Reference**
+- **Main Processing**: `POST /api/transform`
+- **Health Check**: `GET /api/health` or `GET /api/management/health`
+- **Configuration**: `GET /api/management/config/status`
+- **Pub/Sub Status**: `GET /api/management/pubsub/status`
 
 ---
 

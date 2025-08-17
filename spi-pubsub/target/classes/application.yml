@@ -12,6 +12,12 @@ logging:
   level:
     org.springframework.integration: INFO
     com.ads.apiseng: DEBUG
+    com.ads.apiseng.service.PubSubService: DEBUG
+    com.ads.apiseng.config.EnhancedIntegrationConfig: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  console:
+    enabled: true
 
 # Custom Application Configuration
 spi-app:
@@ -63,9 +69,12 @@ spi-app:
         
   # Pub/Sub Configuration
   pubsub:
+    enabled: true
     message-broker:
       type: "in-memory" # Options: in-memory, redis, rabbitmq
       enabled: true
+    console-logging: true
+    verbose-output: true
     topics:
       xml-processed: "xml.processed"
       customer-events: "customer.events"
@@ -145,6 +154,8 @@ spi-app:
     retry-attempts: 3
     enable-metrics: true
     enable-tracing: true
+    enable-console-logging: true
+    parallel-processing: true
     
   # Error Handling
   error-handling:
