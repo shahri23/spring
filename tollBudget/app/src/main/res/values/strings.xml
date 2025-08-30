@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Toll Budget</string>
+    <string name="destination_hint">Enter destination</string>
+    <string name="budget_hint">Max budget ($)</string>
+    <string name="find_routes">Find Routes</string>
+    <string name="current_location">Current Location</string>
+    <string name="available_routes">Available Routes</string>
+    <string name="within_budget">Within Budget</string>
+    <string name="over_budget">Over Budget</string>
+    <string name="no_routes_found">No routes found within your budget</string>
+    <string name="getting_location">Getting current location...</string>
+    <string name="location_permission_required">Location permission is required</string>
+    <string name="network_error">Network error occurred</string>
+    <string name="finding_routes">Finding Routes...</string>
+    <string name="free_route">Free</string>
+    <string name="toll_route">Toll</string>
+    <string name="navigation_started">Navigation started</string>
+    <string name="route_selected">Route selected: %s</string>
+</resources>
