@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    ===========================================================
+    Spring Integration External Configuration Demo
+    ===========================================================
+    This XML file demonstrates:
+      ✅ Message Channels
+      ✅ Transformer (uppercase payload)
+      ✅ Content-Based Routing (JSON vs XML vs CSV)
+      ✅ Splitter (CSV into individual items)
+      ✅ Publish-Subscribe Channel (broadcast)
+      ✅ Service Activators (handlers)
+
+    HOW TO USE:
+      - Copy this file to /tmp/integration.xml
+      - No need to change schema declarations below
+      - Only customize marked sections (channel IDs, handler names, expressions)
+
+    ===========================================================
+-->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:int="http://www.springframework.org/schema/integration"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -8,32 +27,74 @@
            http://www.springframework.org/schema/integration
            https://www.springframework.org/schema/integration/spring-integration.xsd">
 
-    <int:channel id="inbound"/>
-    <int:channel id="routerChannel"/>
-    <int:channel id="fooChannel"/>
-    <int:channel id="barChannel"/>
+    <!-- ================== MESSAGE CHANNELS ================== -->
+    <!-- Channels are "pipes" connecting EIP components.
+         You can rename these IDs, but then adjust references accordingly. -->
+    <int:channel id="inputChannel"/>        <!-- Entry point for all messages -->
+    <int:channel id="transformChannel"/>    <!-- After transformation -->
+    <int:channel id="routerChannel"/>       <!-- Before router -->
+    <int:channel id="splitChannel"/>        <!-- Output of splitter -->
+    <int:publish-subscribe-channel id="pubSubChannel"/> <!-- Broadcast channel -->
 
+    <!-- ================== TRANSFORMER ================== -->
+    <!-- Uppercase all payload text.
+         Customize expression if you want different transformations. -->
     <int:transformer id="uppercaseTransformer"
-                     input-channel="inbound"
+                     input-channel="inputChannel"
                      output-channel="routerChannel"
-                     expression="payload != null ? payload.trim().toUpperCase() : payload"/>
+                     expression="payload != null ? payload.toUpperCase() : payload"/>
 
-    <int:router id="headerRouter"
+    <!-- ================== CONTENT-BASED ROUTER ================== -->
+    <!-- Simple heuristic:
+         - If payload starts with "{" → JSON
+         - If payload starts with "<" → XML
+         - Else → CSV
+         Customize expression as needed (e.g. use headers instead of payload). -->
+    <int:router id="contentRouter"
                 input-channel="routerChannel"
-                expression="headers['dest']">
-        <int:mapping value="foo" channel="fooChannel"/>
-        <int:mapping value="bar" channel="barChannel"/>
-        <int:default-output-channel ref="fooChannel"/>
-    </int:router>
+                expression="payload.startsWith('{') ? 'jsonChannel' 
+                            : (payload.startsWith('&lt;') ? 'xmlChannel' : 'csvChannel')"/>
 
-    <int:service-activator input-channel="fooChannel" ref="fooHandler" method="handle"/>
-    <int:service-activator input-channel="barChannel" ref="barHandler" method="handle"/>
+    <!-- Target channels for each case -->
+    <int:channel id="jsonChannel"/>
+    <int:channel id="xmlChannel"/>
+    <int:channel id="csvChannel"/>
 
-    <bean id="fooHandler" class="com.ads.apiseng.handlers.SimpleHandler">
-        <constructor-arg value="FOO"/>
+    <!-- ================== JSON HANDLER ================== -->
+    <!-- Customize handler name/label only.
+         Class is fixed (SimpleHandler.java in project). -->
+    <int:service-activator input-channel="jsonChannel" ref="jsonHandler" method="handle"/>
+    <bean id="jsonHandler" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="JSON-HANDLER"/>
     </bean>
 
-    <bean id="barHandler" class="com.ads.apiseng.handlers.SimpleHandler">
-        <constructor-arg value="BAR"/>
+    <!-- ================== XML HANDLER ================== -->
+    <int:service-activator input-channel="xmlChannel" ref="xmlHandler" method="handle"/>
+    <bean id="xmlHandler" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="XML-HANDLER"/>
     </bean>
+
+    <!-- ================== SPLITTER (CSV) ================== -->
+    <!-- Split a comma-separated string into parts.
+         Customize expression if your delimiter is different. -->
+    <int:splitter input-channel="csvChannel"
+                  output-channel="splitChannel"
+                  expression="payload.split(',')"/>
+
+    <!-- Bridge ensures split items flow into pub-sub channel -->
+    <int:bridge input-channel="splitChannel" output-channel="pubSubChannel"/>
+
+    <!-- ================== PUB-SUB HANDLERS ================== -->
+    <!-- Every subscriber receives ALL split items.
+         Add/remove handlers freely by copying pattern below. -->
+    <int:service-activator input-channel="pubSubChannel" ref="csvHandler1" method="handle"/>
+    <int:service-activator input-channel="pubSubChannel" ref="csvHandler2" method="handle"/>
+
+    <bean id="csvHandler1" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="CSV-HANDLER-1"/>
+    </bean>
+    <bean id="csvHandler2" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="CSV-HANDLER-2"/>
+    </bean>
+
 </beans>
