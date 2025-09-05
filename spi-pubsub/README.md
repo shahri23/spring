@@ -703,3 +703,35 @@ java -jar target/spi-app.jar
 - ✅ **Comprehensive Documentation** - Complete testing guide included
 
 **Ready for Enterprise Deployment!** 🚀
+
+## External config from `/tmp/`
+
+This app now supports **optional** external configuration:
+
+- **YAML/Properties**: place `/tmp/application.yml` (or `.properties`) to override defaults. Internally we set:
+  - `spring.config.import=optional:file:/tmp/`
+  - `spring.config.additional-location=optional:file:/tmp/`
+  Missing files are ignored.
+
+- **Spring Integration XML**: drop one of these files and it will be auto-loaded at startup if present (first match wins):
+  - `/tmp/integration.xml`
+  - `/tmp/integration-context.xml`
+  - `/tmp/spring-integration.xml`
+
+If none is present, the app falls back to the built-in Java DSL flows (`IntegrationConfig`, `EnhancedIntegrationConfig`).
+
+### Quick demo
+1. Copy a sample XML to `/tmp` (Unix/macOS/Git Bash):
+   ```bash
+   cp ./samples/external-integration.xml /tmp/integration.xml
+   ```
+2. (Optional) Create `/tmp/application.yml` to override properties like ports or routing.
+3. Run the app:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+4. Send a message and route it by header:
+   ```bash
+   curl -X POST "http://localhost:8080/api/route?dest=foo" -H "Content-Type: text/plain" --data "hello world"
+   curl -X POST "http://localhost:8080/api/route?dest=bar" -H "Content-Type: text/plain" --data "hello world"
+   ```

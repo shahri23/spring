@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd">
+
+    <!-- Simple demo flow: HTTP -> transform -> router -> channels -> logger -->
+    <int:channel id="inbound"/>
+    <int:channel id="fooChannel"/>
+    <int:channel id="barChannel"/>
+
+    <int:transformer id="upperCaseTransformer" input-channel="inbound" output-channel="routerChannel"
+                     expression="payload != null ? payload.toString().toUpperCase() : ''"/>
+                     
+    <int:channel id="routerChannel"/>
+
+    <int:header-value-router input-channel="routerChannel" header-name="dest">
+        <int:mapping value="foo" channel="fooChannel"/>
+        <int:mapping value="bar" channel="barChannel"/>
+    </int:header-value-router>
+
+    <int:service-activator input-channel="fooChannel" ref="loggerService" method="info"/>
+    <int:service-activator input-channel="barChannel" ref="loggerService" method="info"/>
+
+    <bean id="loggerService" class="org.slf4j.LoggerFactory" factory-method="getLogger">
+        <constructor-arg value="ExternalXmlFlow"/>
+    </bean>
+</beans>
