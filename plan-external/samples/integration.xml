@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/integration
+           https://www.springframework.org/schema/integration/spring-integration.xsd">
+
+    <int:channel id="inbound"/>
+    <int:channel id="routerChannel"/>
+    <int:channel id="fooChannel"/>
+    <int:channel id="barChannel"/>
+
+    <int:transformer id="uppercaseTransformer"
+                     input-channel="inbound"
+                     output-channel="routerChannel"
+                     expression="payload != null ? payload.trim().toUpperCase() : payload"/>
+
+    <int:router id="headerRouter"
+                input-channel="routerChannel"
+                expression="headers['dest']">
+        <int:mapping value="foo" channel="fooChannel"/>
+        <int:mapping value="bar" channel="barChannel"/>
+        <int:default-output-channel ref="fooChannel"/>
+    </int:router>
+
+    <int:service-activator input-channel="fooChannel" ref="fooHandler" method="handle"/>
+    <int:service-activator input-channel="barChannel" ref="barHandler" method="handle"/>
+
+    <bean id="fooHandler" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="FOO"/>
+    </bean>
+
+    <bean id="barHandler" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="BAR"/>
+    </bean>
+</beans>
