@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+=====================================================================
+EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
+=====================================================================
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-file="http://www.springframework.org/schema/integration/file"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/integration
+           https://www.springframework.org/schema/integration/spring-integration.xsd
+           http://www.springframework.org/schema/integration/file
+           https://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+           http://www.springframework.org/schema/integration/http
+           https://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
+
+    <!-- ADVANCED PATTERN CHANNELS -->
+    <int:channel id="aggregationInputChannel"/>
+    <int:channel id="aggregatedResultChannel"/>
+    <int:channel id="scatterChannel"/>
+    <int:channel id="gatherChannel"/>
+    <int:publish-subscribe-channel id="scatterPubSubChannel"/>
+    <int:channel id="fileInputChannel"/>
+    <int:channel id="fileProcessingChannel"/>
+    <int:channel id="retryChannel"/>
+    <int:channel id="controlChannel"/>
+
+    <!-- MESSAGE STORE -->
+    <bean id="messageStore" 
+          class="org.springframework.integration.store.SimpleMessageStore"/>
+
+    <!-- AGGREGATOR PATTERN -->
+    <int:aggregator id="orderAggregator"
+                    input-channel="aggregationInputChannel"
+                    output-channel="aggregatedResultChannel"
+                    correlation-strategy-expression="headers.correlationId"
+                    release-strategy-expression="size() >= 3 or T(System).currentTimeMillis() - timestamp > 10000"
+                    message-store="messageStore"
+                    send-partial-result-on-expiry="true"
+                    expire-groups-upon-completion="true"/>
+    
+    <int:service-activator input-channel="aggregatedResultChannel"
+                           ref="aggregationProcessor"
+                           method="handle"/>
+    
+    <bean id="aggregationProcessor" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="AGGREGATION-PROCESSOR"/>
+    </bean>
+
+    <!-- SCATTER-GATHER PATTERN -->
+    <int:publish-subscribe-channel id="scatterChannel"/>
+    
+    <int:service-activator input-channel="scatterChannel"
+                           output-channel="gatherChannel"
+                           ref="processorA"
+                           method="handle"/>
+    <int:service-activator input-channel="scatterChannel"
+                           output-channel="gatherChannel"
+                           ref="processorB"
+                           method="handle"/>
+    <int:service-activator input-channel="scatterChannel"
+                           output-channel="gatherChannel"
+                           ref="processorC"
+                           method="handle"/>
+    
+    <bean id="processorA" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="PROCESSOR-A"/>
+    </bean>
+    <bean id="processorB" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="PROCESSOR-B"/>
+    </bean>
+    <bean id="processorC" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="PROCESSOR-C"/>
+    </bean>
+
+    <!-- FILE INTEGRATION -->
+    <int-file:inbound-channel-adapter id="fileInputAdapter"
+                                      directory="/tmp/input"
+                                      channel="fileInputChannel"
+                                      prevent-duplicates="true"
+                                      auto-startup="true">
+        <int:poller fixed-delay="5000"/>
+    </int-file:inbound-channel-adapter>
+    
+    <int:service-activator input-channel="fileInputChannel"
+                           output-channel="fileProcessingChannel"
+                           ref="fileProcessor"
+                           method="handle"/>
+    
+    <bean id="fileProcessor" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="FILE-PROCESSOR"/>
+    </bean>
+    
+    <int:transformer id="fileContentTransformer"
+                     input-channel="fileProcessingChannel"
+                     output-channel="fileOutputChannel"
+                     expression="'PROCESSED: ' + payload"/>
+    
+    <int:channel id="fileOutputChannel"/>
+    
+    <int-file:outbound-channel-adapter id="fileOutputAdapter"
+                                       directory="/tmp/output"
+                                       channel="fileOutputChannel"
+                                       filename-generator-expression="'processed-' + T(System).currentTimeMillis() + '.txt'"/>
+
+    <!-- RETRY PATTERN (SIMPLIFIED) -->
+    <int:service-activator input-channel="retryChannel"
+                           ref="flakyService"
+                           method="handle"/>
+    
+    <bean id="flakyService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="FLAKY-SERVICE"/>
+    </bean>
+
+    <!-- CONTROL BUS -->
+    <int:control-bus id="controlBus" 
+                     input-channel="controlChannel"/>
+
+    <!-- HTTP ENDPOINTS -->
+    <int-http:inbound-gateway id="aggregationTestEndpoint"
+                              supported-methods="POST"
+                              request-channel="aggregationInputChannel"
+                              path="/api/advanced/aggregate"/>
+    
+    <int-http:inbound-gateway id="scatterGatherTestEndpoint"
+                              supported-methods="POST"
+                              request-channel="scatterChannel"
+                              path="/api/advanced/scatter-gather"/>
+    
+    <int-http:inbound-gateway id="retryTestEndpoint"
+                              supported-methods="POST"
+                              request-channel="retryChannel"
+                              path="/api/advanced/retry"/>
+
+    <int-http:inbound-gateway id="controlHttpGateway"
+                              supported-methods="POST"
+                              request-channel="controlChannel"
+                              path="/api/control"/>
+
+</beans>

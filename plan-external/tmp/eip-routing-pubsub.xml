@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+=====================================================================
+EIP DEMO FILE 2: ROUTING & PUBLISH-SUBSCRIBE PATTERNS (CORRECTED)
+=====================================================================
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/integration
+           https://www.springframework.org/schema/integration/spring-integration.xsd
+           http://www.springframework.org/schema/integration/http
+           https://www.springframework.org/schema/integration/http/spring-integration-http.xsd
+           http://www.springframework.org/schema/task
+           https://www.springframework.org/schema/task/spring-task.xsd">
+
+    <!-- ROUTING CHANNELS -->
+    <int:channel id="routingInputChannel"/>
+    <int:channel id="jsonRoutingChannel"/>
+    <int:channel id="xmlRoutingChannel"/>
+    <int:channel id="csvRoutingChannel"/>
+    <int:channel id="defaultRoutingChannel"/>
+    
+    <!-- PUB/SUB CHANNELS -->
+    <int:publish-subscribe-channel id="orderEventChannel" 
+                                   task-executor="routingAsyncExecutor"/>
+    <int:publish-subscribe-channel id="inventoryEventChannel"
+                                   task-executor="routingAsyncExecutor"/>
+    
+    <!-- CSV PROCESSING CHANNELS -->
+    <int:channel id="csvItemChannel"/>
+    <int:channel id="processedItemChannel"/>
+
+    <!-- ASYNC EXECUTOR -->
+    <bean id="routingAsyncExecutor" 
+          class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="2"/>
+        <property name="maxPoolSize" value="5"/>
+        <property name="queueCapacity" value="25"/>
+        <property name="threadNamePrefix" value="EIP-Router-"/>
+    </bean>
+
+    <!-- CONTENT-BASED ROUTER (FIXED) -->
+    <int:router id="contentBasedRouter"
+                input-channel="routingInputChannel"
+                expression="payload.toString().trim().startsWith('{') ? 'jsonRoutingChannel' :
+                           (payload.toString().trim().startsWith('&lt;') ? 'xmlRoutingChannel' :
+                           (payload.toString().contains(',') ? 'csvRoutingChannel' : 'defaultRoutingChannel'))">
+    </int:router>
+
+    <!-- MESSAGE SPLITTER FOR CSV -->
+    <int:splitter id="csvMessageSplitter"
+                  input-channel="csvRoutingChannel"
+                  output-channel="csvItemChannel"
+                  expression="payload.toString().split(',')"
+                  apply-sequence="true"/>
+    
+    <!-- PROCESS CSV ITEMS -->
+    <int:transformer id="csvItemProcessor"
+                     input-channel="csvItemChannel"
+                     output-channel="processedItemChannel"
+                     expression="'ITEM: ' + payload.toString().trim()"/>
+
+    <!-- SEND TO INVENTORY -->
+    <int:service-activator input-channel="processedItemChannel"
+                           output-channel="inventoryEventChannel"
+                           ref="csvItemHandler"
+                           method="handle"/>
+    
+    <bean id="csvItemHandler" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="CSV-ITEM-PROCESSOR"/>
+    </bean>
+
+    <!-- SERVICE SUBSCRIBERS -->
+    <int:service-activator input-channel="orderEventChannel"
+                           ref="orderService"
+                           method="handle"/>
+    <int:service-activator input-channel="orderEventChannel"
+                           ref="auditService"
+                           method="handle"/>
+    <int:service-activator input-channel="orderEventChannel"
+                           ref="emailService"
+                           method="handle"/>
+    <int:service-activator input-channel="orderEventChannel"
+                           ref="analyticsService"
+                           method="handle"/>
+    
+    <int:service-activator input-channel="inventoryEventChannel"
+                           ref="inventoryService"
+                           method="handle"/>
+    <int:service-activator input-channel="inventoryEventChannel"
+                           ref="warehouseService"
+                           method="handle"/>
+    <int:service-activator input-channel="inventoryEventChannel"
+                           ref="auditService"
+                           method="handle"/>
+    
+    <int:service-activator input-channel="xmlRoutingChannel"
+                           ref="inventoryService"
+                           method="handle"/>
+    <int:service-activator input-channel="xmlRoutingChannel"
+                           ref="warehouseService"
+                           method="handle"/>
+    <int:service-activator input-channel="xmlRoutingChannel"
+                           ref="auditService"
+                           method="handle"/>
+
+    <!-- SERVICE BEANS -->
+    <bean id="orderService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="ORDER-SERVICE"/>
+    </bean>
+    <bean id="inventoryService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="INVENTORY-SERVICE"/>
+    </bean>
+    <bean id="warehouseService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="WAREHOUSE-SERVICE"/>
+    </bean>
+    <bean id="auditService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="AUDIT-SERVICE"/>
+    </bean>
+    <bean id="emailService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="EMAIL-NOTIFICATION-SERVICE"/>
+    </bean>
+    <bean id="analyticsService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="ANALYTICS-SERVICE"/>
+    </bean>
+    
+    <!-- DEFAULT HANDLER -->
+    <int:service-activator input-channel="defaultRoutingChannel"
+                           ref="defaultHandler"
+                           method="handle"/>
+    
+    <bean id="defaultHandler" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="DEFAULT-HANDLER"/>
+    </bean>
+
+    <!-- HTTP ENDPOINTS -->
+    <int-http:inbound-gateway id="orderHttpEndpoint"
+                              supported-methods="POST"
+                              request-channel="jsonRoutingChannel"
+                              path="/api/orders"/>
+    
+    <int-http:inbound-gateway id="inventoryHttpEndpoint"
+                              supported-methods="POST"
+                              request-channel="xmlRoutingChannel"
+                              path="/api/inventory"/>
+    
+    <int-http:inbound-gateway id="batchHttpEndpoint"
+                              supported-methods="POST"
+                              request-channel="csvRoutingChannel"
+                              path="/api/batch"/>
+
+</beans>
