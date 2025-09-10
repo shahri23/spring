@@ -1,0 +1,393 @@
+4436  rt_sigaction(SIGRT_1, {sa_handler=0x722159499530, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, NULL, 8) = 0
+4436  rt_sigprocmask(SIG_UNBLOCK, [RTMIN RT_1], NULL, 8) = 0
+4436  rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+4436  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4437  rt_sigaction(SIGUSR2, {sa_handler=0x722158c86db0, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, NULL, 8) = 0
+4437  rt_sigaction(SIGHUP, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGINT, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGTERM, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGSEGV, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGSEGV, {sa_handler=0x722158c85640, sa_mask=~[ILL TRAP BUS FPE SEGV RTMIN RT_1], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGPIPE, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGPIPE, {sa_handler=0x722158c85640, sa_mask=~[ILL TRAP BUS FPE SEGV RTMIN RT_1], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGBUS, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGBUS, {sa_handler=0x722158c85640, sa_mask=~[ILL TRAP BUS FPE SEGV RTMIN RT_1], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGILL, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGILL, {sa_handler=0x722158c85640, sa_mask=~[ILL TRAP BUS FPE SEGV RTMIN RT_1], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGFPE, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGFPE, {sa_handler=0x722158c85640, sa_mask=~[ILL TRAP BUS FPE SEGV RTMIN RT_1], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGXFSZ, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGXFSZ, {sa_handler=0x722158c85640, sa_mask=~[ILL TRAP BUS FPE SEGV RTMIN RT_1], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGQUIT, {sa_handler=0x722158c84b50, sa_mask=~[ILL TRAP BUS FPE SEGV RTMIN RT_1], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4437  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  --- SIGSEGV {si_signo=SIGSEGV, si_code=SEGV_MAPERR, si_addr=NULL} ---
+4437  rt_sigprocmask(SIG_UNBLOCK, [ILL TRAP BUS FPE SEGV], NULL, 8) = 0
+4437  rt_sigreturn({mask=[QUIT]})       = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4438  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4438  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4438  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4438  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4439  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4439  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4439  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4439  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT],  <unfinished ...>
+4440  rt_sigprocmask(SIG_SETMASK, [QUIT],  <unfinished ...>
+4437  <... rt_sigprocmask resumed>NULL, 8) = 0
+4440  <... rt_sigprocmask resumed>NULL, 8) = 0
+4440  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4440  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4440  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4441  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4441  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4441  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4441  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4442  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4442  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4442  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4442  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4443  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4443  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4443  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4443  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4444  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_UNBLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigaction(SIGHUP, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGHUP, {sa_handler=0x722158c84b50, sa_mask=~[ILL TRAP BUS FPE SEGV RTMIN RT_1], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGINT, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGINT, {sa_handler=0x722158c84b50, sa_mask=~[ILL TRAP BUS FPE SEGV RTMIN RT_1], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGTERM, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigaction(SIGTERM, {sa_handler=0x722158c84b50, sa_mask=~[ILL TRAP BUS FPE SEGV RTMIN RT_1], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x722159445330}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4445  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4445  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4445  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4445  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4446  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4446  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4446  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4446  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4447  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4447  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4447  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4447  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4448  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4448  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4448  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4448  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4449  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4449  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4449  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4449  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4450  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4450  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4450  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4450  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4451  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4451  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4451  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4451  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4452  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4452  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4452  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4452  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4453  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4453  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4453  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4453  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4454  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4454  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4454  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4454  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigaction(SIGRT_30, {sa_handler=0x72215961dfa0, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x722159445330}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+4451  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4451  rt_sigprocmask(SIG_SETMASK, [QUIT],  <unfinished ...>
+4455  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4451  <... rt_sigprocmask resumed>NULL, 8) = 0
+4455  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4455  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4455  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4451  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4451  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4456  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4456  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4456  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4456  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4456  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4456  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4456  +++ exited with 0 +++
+4455  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4455  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4455  +++ exited with 0 +++
+4451  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4451  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4457  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4457  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4457  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4457  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4451  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4451  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4458  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4458  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4458  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4458  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+4444  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4459  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4459  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4459  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4459  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+4444  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4460  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4460  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4460  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4460  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+4444  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4461  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4461  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4461  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4461  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+4444  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4462  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4462  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4462  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4462  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4458  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4458  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4458  +++ exited with 0 +++
+4457  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4457  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4457  +++ exited with 0 +++
+4437  rt_sigaction(SIGCHLD, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART|SA_NOCLDSTOP, sa_restorer=0x722159445330}, NULL, 8) = 0
+4451  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4451  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4463  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4463  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4463  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4463  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4464  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4464  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4464  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4464  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4451  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4451  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4465  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4465  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4465  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4465  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4464  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4464  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4464  +++ exited with 0 +++
+4465  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4465  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4465  +++ exited with 0 +++
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4466  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4466  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4466  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4466  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4466  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4466  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4466  +++ exited with 0 +++
+4444  rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+4444  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4488  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4488  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4488  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4488  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+4444  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4490  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4490  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4490  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4490  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4463  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4463  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4463  +++ exited with 0 +++
+4437  --- SIGSEGV {si_signo=SIGSEGV, si_code=SEGV_MAPERR, si_addr=0x28} ---
+4437  rt_sigprocmask(SIG_UNBLOCK, [ILL TRAP BUS FPE SEGV], NULL, 8) = 0
+4437  rt_sigreturn({mask=[QUIT]})       = 125485375228368
+4451  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4451  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4491  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4491  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4491  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4491  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+4444  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4492  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4492  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4492  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4492  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+4444  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4493  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4493  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4493  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4493  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_BLOCK, ~[], [], 8) = 0
+4444  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4494  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4494  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4494  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4494  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4439  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4439  rt_sigprocmask(SIG_SETMASK, [QUIT],  <unfinished ...>
+4495  rt_sigprocmask(SIG_SETMASK, [QUIT],  <unfinished ...>
+4439  <... rt_sigprocmask resumed>NULL, 8) = 0
+4495  <... rt_sigprocmask resumed>NULL, 8) = 0
+4495  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4495  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4495  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4439  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4439  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4496  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4496  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4496  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4496  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4491  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4491  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4491  +++ exited with 0 +++
+4451  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4451  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4497  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4497  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4497  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4497  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4451  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4451  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4498  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4498  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4498  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4498  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  --- SIGSEGV {si_signo=SIGSEGV, si_code=SEGV_MAPERR, si_addr=0x14} ---
+4437  rt_sigprocmask(SIG_UNBLOCK, [ILL TRAP BUS FPE SEGV], NULL, 8) = 0
+4437  rt_sigreturn({mask=[QUIT]})       = 0
+4498  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4498  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4498  +++ exited with 0 +++
+4497  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4497  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4497  +++ exited with 0 +++
+4451  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4451  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4499  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4499  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4499  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4499  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, NULL, [], 8) = 0
+4437  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4500  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4500  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4500  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4500  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4501  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4501  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4501  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4501  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[], [QUIT], 8) = 0
+4437  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4502  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4502  rt_sigprocmask(SIG_BLOCK, NULL, [QUIT], 8) = 0
+4502  rt_sigprocmask(SIG_UNBLOCK, [HUP INT ILL BUS FPE SEGV USR2 TERM], NULL, 8) = 0
+4502  rt_sigprocmask(SIG_BLOCK, [QUIT], NULL, 8) = 0
+4501  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4501  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4501  +++ exited with 0 +++
+4502  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4502  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4502  +++ exited with 0 +++
+4500  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4500  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4500  +++ exited with 0 +++
+4443  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4443  +++ exited with 0 +++
+4441  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4441  +++ exited with 0 +++
+4442  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4442  +++ exited with 0 +++
+4439  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4439  +++ exited with 0 +++
+4447  rt_sigprocmask(SIG_SETMASK, [QUIT], NULL, 8) = 0
+4447  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4444  rt_sigprocmask(SIG_BLOCK, ~[RT_1],  <unfinished ...>
+4447  +++ exited with 0 +++
+4444  <... rt_sigprocmask resumed>NULL, 8) = 0
+4444  +++ exited with 0 +++
+4437  rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+4437  rt_sigprocmask(SIG_BLOCK, ~[RT_1], NULL, 8) = 0
+4437  +++ exited with 0 +++
+4499  +++ exited with 0 +++
+4496  +++ exited with 0 +++
+4495  +++ exited with 0 +++
+4494  +++ exited with 0 +++
+4493  +++ exited with 0 +++
+4492  +++ exited with 0 +++
+4490  +++ exited with 0 +++
+4488  +++ exited with 0 +++
+4462  +++ exited with 0 +++
+4461  +++ exited with 0 +++
+4460  +++ exited with 0 +++
+4459  +++ exited with 0 +++
+4454  +++ exited with 0 +++
+4453  +++ exited with 0 +++
+4452  +++ exited with 0 +++
+4451  +++ exited with 0 +++
+4450  +++ exited with 0 +++
+4449  +++ exited with 0 +++
+4448  +++ exited with 0 +++
+4446  +++ exited with 0 +++
+4445  +++ exited with 0 +++
+4440  +++ exited with 0 +++
+4438  +++ exited with 0 +++
+4436  +++ exited with 0 +++

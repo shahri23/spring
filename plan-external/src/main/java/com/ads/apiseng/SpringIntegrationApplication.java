@@ -2,28 +2,38 @@ package com.ads.apiseng;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+
+import java.io.File;
 
 @SpringBootApplication
 public class SpringIntegrationApplication {
+
     public static void main(String[] args) {
-        SpringApplication.run(SpringIntegrationApplication.class, args);
-        System.out.println("===============================================");
-        System.out.println("🚀 Spring Integration EIP Demo App Started");
-        System.out.println("===============================================");
-        System.out.println("📁 Loading EIP configurations from:");
-        System.out.println("   ✅ ./tmp/eip-basic-transforms.xml");
-        // System.out.println("   ✅ ./tmp/eip-routing-pubsub.xml");
-        // System.out.println("   ✅ ./tmp/eip-advanced-patterns.xml");
-        System.out.println("===============================================");
-        System.out.println("🌐 HTTP Endpoints Available:");
-        System.out.println("   POST /api/basic-transform     - Basic transformations");
-        System.out.println("   POST /api/orders              - JSON order processing");
-        System.out.println("   POST /api/inventory           - XML inventory processing");
-        System.out.println("   POST /api/batch               - CSV batch processing");
-        System.out.println("   POST /api/advanced/aggregate  - Message aggregation");
-        System.out.println("   POST /api/advanced/scatter-gather - Parallel processing");
-        System.out.println("===============================================");
-        System.out.println("🔍 Monitor logs to see EIP patterns in action!");
-        System.out.println("===============================================");
+        SpringApplication app = new SpringApplication(SpringIntegrationApplication.class);
+
+        // Dynamically import all XML files from ./tmp
+        app.addInitializers((ApplicationContextInitializer<ConfigurableApplicationContext>) ctx -> {
+            if (ctx instanceof GenericApplicationContext gac) {
+                XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(gac);
+                File tmpDir = new File("./tmp");
+                if (tmpDir.exists() && tmpDir.isDirectory()) {
+                    File[] files = tmpDir.listFiles((dir, name) -> name.endsWith(".xml"));
+                    if (files != null) {
+                        for (File f : files) {
+                            System.out.println("📂 Importing flow: " + f.getAbsolutePath());
+                            reader.loadBeanDefinitions("file:" + f.getAbsolutePath());
+                        }
+                    }
+                } else {
+                    System.out.println("⚠️ No ./tmp directory found — skipping external flows.");
+                }
+            }
+        });
+
+        app.run(args);
     }
 }

@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+=====================================================================
+EIP DEMO FILE 2: ROUTING & PUBLISH-SUBSCRIBE PATTERNS
+=====================================================================
+This file demonstrates intermediate EIP patterns for message routing:
+
+✅ MESSAGE ROUTING PATTERNS:
+   - Content-Based Router: Route by message content
+   - Recipient List Router: Send to multiple destinations  
+   - Message Splitter: Break messages into parts
+   - Header Value Router: Route by header values
+
+✅ PUB/SUB & MICROSERVICES PATTERNS:
+   - Publish-Subscribe Channel: Event broadcasting
+   - Multiple Subscribers: Independent service processing
+   - Event-Driven Architecture: Loose coupling
+   - Parallel Processing: Async message handling
+
+✅ MESSAGE FLOW:
+   Input → Route by Content → Pub/Sub → Multiple Services → Aggregation
+
+🎯 This file builds on File 1 and adds ROUTING & PUB/SUB capabilities!
+=====================================================================
+-->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/integration
+           https://www.springframework.org/schema/integration/spring-integration.xsd
+           http://www.springframework.org/schema/integration/http
+           https://www.springframework.org/schema/integration/http/spring-integration-http.xsd
+           http://www.springframework.org/schema/task
+           https://www.springframework.org/schema/task/spring-task.xsd">
+
+    <!-- ================================================================= -->
+    <!-- ROUTING & PUB/SUB CHANNELS                                       -->
+    <!-- ================================================================= -->
+    
+    <!-- Main routing input (connects to basic transform output) -->
+    <int:channel id="routingInputChannel">
+        <int:queue capacity="100"/>
+    </int:channel>
+    
+    <!-- Content-based routing channels -->
+    <int:channel id="jsonRoutingChannel"/>
+    <int:channel id="xmlRoutingChannel"/>
+    <int:channel id="csvRoutingChannel"/>
+    <int:channel id="defaultRoutingChannel"/>
+    
+    <!-- Publish-Subscribe channels for microservices -->
+    <int:publish-subscribe-channel id="orderEventChannel" 
+                                   task-executor="routingAsyncExecutor"/>
+    <int:publish-subscribe-channel id="inventoryEventChannel"
+                                   task-executor="routingAsyncExecutor"/>
+    <int:publish-subscribe-channel id="customerEventChannel"
+                                   task-executor="routingAsyncExecutor"/>
+    <int:publish-subscribe-channel id="analyticsEventChannel"/>
+    
+    <!-- Splitter output channels -->
+    <int:channel id="csvItemChannel"/>
+    <int:channel id="processedItemChannel"/>
+
+    <!-- ================================================================= -->
+    <!-- ASYNC EXECUTOR FOR PARALLEL PROCESSING 🚀                       -->
+    <!-- ================================================================= -->
+    <bean id="routingAsyncExecutor" 
+          class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="3"/>
+        <property name="maxPoolSize" value="10"/>
+        <property name="queueCapacity" value="50"/>
+        <property name="threadNamePrefix" value="EIP-Router-"/>
+        <property name="waitForTasksToCompleteOnShutdown" value="true"/>
+    </bean>
+
+    <!-- ================================================================= -->
+    <!-- EIP PATTERN 7: CONTENT-BASED ROUTER 🎯                         -->
+    <!-- PURPOSE: Route messages based on content analysis                -->
+    <!-- BUSINESS VALUE: Dynamic routing, content-aware processing        -->
+    <!-- ================================================================= -->
+   <int:router id="contentBasedRouter"
+            input-channel="routerInputChannel"
+            expression="headers['type']"
+            default-output-channel="defaultChannel">
+    <int:mapping value="A" channel="channelA"/>
+    <int:mapping value="B" channel="channelB"/>
+</int:router>
+
+    <!-- Content type detector transformer -->
+    <int:transformer id="contentTypeDetector"
+                     input-channel="routingInputChannel"
+                     output-channel="routingInputChannel"
+                     expression="payload.toString().trim().startsWith('{') ? 'JSON' :
+                                (payload.toString().trim().startsWith('&lt;') ? 'XML' :
+                                (payload.toString().contains(',') ? 'CSV' : 'UNKNOWN'))"/>
+
+    <!-- ================================================================= -->
+    <!-- EIP PATTERN 8: RECIPIENT LIST ROUTER 📨                        -->
+    <!-- PURPOSE: Send messages to multiple interested parties            -->
+    <!-- BUSINESS VALUE: Fan-out messaging, parallel processing           -->
+    <!-- ================================================================= -->
+    <int:recipient-list-router id="jsonRecipientList"
+                               input-channel="jsonRoutingChannel"
+                               apply-sequence="true">
+        <!-- Send to order processing pub/sub -->
+        <int:recipient channel="orderEventChannel"/>
+        <!-- Send to analytics for reporting -->
+        <int:recipient channel="analyticsEventChannel"/>
+        <!-- Conditional recipient for large orders -->
+        <int:recipient channel="customerEventChannel" 
+                       selector-expression="payload.toString().length() > 100"/>
+    </int:recipient-list-router>
+
+    <!-- ================================================================= -->
+    <!-- EIP PATTERN 9: MESSAGE SPLITTER ✂️                            -->
+    <!-- PURPOSE: Break composite messages into individual items          -->
+    <!-- BUSINESS VALUE: Batch processing, parallel item handling         -->
+    <!-- ================================================================= -->
+    <int:splitter id="csvMessageSplitter"
+                  input-channel="csvRoutingChannel"
+                  output-channel="csvItemChannel"
+                  expression="payload.toString().split(',')"
+                  apply-sequence="true">
+        <!-- Each CSV item gets sequence information -->
+    </int:splitter>
+    
+    <!-- Process individual CSV items -->
+    <int:transformer id="csvItemProcessor"
+                     input-channel="csvItemChannel"
+                     output-channel="processedItemChannel"
+                     expression="'ITEM: ' + payload.toString().trim()"/>
+
+    <!-- Send processed items to inventory events -->
+    <int:service-activator input-channel="processedItemChannel"
+                           output-channel="inventoryEventChannel"
+                           ref="csvItemHandler"
+                           method="processItem"/>
+    
+    <bean id="csvItemHandler" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="CSV-ITEM-PROCESSOR"/>
+    </bean>
+
+    <!-- ================================================================= -->
+    <!-- EIP PATTERN 10: HEADER VALUE ROUTER 🏷️                        -->
+    <!-- PURPOSE: Route based on message header values                   -->
+    <!-- BUSINESS VALUE: Metadata-driven routing, context-aware flow     -->
+    <!-- ================================================================= -->
+    <int:header-value-router id="priorityRouter"
+                             input-channel="xmlRoutingChannel"
+                             header-name="priority"
+                             default-output-channel="inventoryEventChannel">
+        <int:mapping value="HIGH" channel="customerEventChannel"/>
+        <int:mapping value="MEDIUM" channel="orderEventChannel"/>
+        <int:mapping value="LOW" channel="analyticsEventChannel"/>
+    </int:header-value-router>
+    
+    <!-- Add priority header to XML messages -->
+    <int:header-enricher input-channel="xmlRoutingChannel" 
+                         output-channel="xmlRoutingChannel">
+        <int:header name="priority" 
+                   expression="payload.toString().length() > 200 ? 'HIGH' : 
+                              (payload.toString().length() > 100 ? 'MEDIUM' : 'LOW')"/>
+    </int:header-enricher>
+
+    <!-- ================================================================= -->
+    <!-- MICROSERVICES PUB/SUB SUBSCRIBERS 🏢                           -->
+    <!-- Each service subscribes to relevant events independently         -->
+    <!-- ================================================================= -->
+    
+    <!-- ORDER EVENT SUBSCRIBERS -->
+    <int:service-activator input-channel="orderEventChannel"
+                           ref="orderService"
+                           method="processOrder"/>
+    <int:service-activator input-channel="orderEventChannel"
+                           ref="auditService"
+                           method="auditOrder"/>
+    <int:service-activator input-channel="orderEventChannel"
+                           ref="emailNotificationService"
+                           method="sendOrderNotification"/>
+    
+    <!-- INVENTORY EVENT SUBSCRIBERS -->
+    <int:service-activator input-channel="inventoryEventChannel"
+                           ref="inventoryService"
+                           method="updateInventory"/>
+    <int:service-activator input-channel="inventoryEventChannel"
+                           ref="warehouseService"
+                           method="checkStock"/>
+    <int:service-activator input-channel="inventoryEventChannel"
+                           ref="auditService"
+                           method="auditInventory"/>
+    
+    <!-- CUSTOMER EVENT SUBSCRIBERS -->
+    <int:service-activator input-channel="customerEventChannel"
+                           ref="customerService"
+                           method="updateCustomerProfile"/>
+    <int:service-activator input-channel="customerEventChannel"
+                           ref="loyaltyService"
+                           method="updateLoyaltyPoints"/>
+    <int:service-activator input-channel="customerEventChannel"
+                           ref="emailNotificationService"
+                           method="sendCustomerNotification"/>
+    
+    <!-- ANALYTICS EVENT SUBSCRIBERS -->
+    <int:service-activator input-channel="analyticsEventChannel"
+                           ref="analyticsService"
+                           method="recordEvent"/>
+    <int:service-activator input-channel="analyticsEventChannel"
+                           ref="reportingService"
+                           method="updateReports"/>
+
+    <!-- ================================================================= -->
+    <!-- MICROSERVICE BEANS - LOOSELY COUPLED SERVICES 🔧               -->
+    <!-- Each service is independent and can be scaled separately         -->
+    <!-- ================================================================= -->
+    
+    <!-- Core Business Services -->
+    <bean id="orderService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="ORDER-SERVICE"/>
+    </bean>
+    
+    <bean id="inventoryService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="INVENTORY-SERVICE"/>
+    </bean>
+    
+    <bean id="customerService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="CUSTOMER-SERVICE"/>
+    </bean>
+    
+    <!-- Supporting Services -->
+    <bean id="warehouseService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="WAREHOUSE-SERVICE"/>
+    </bean>
+    
+    <bean id="loyaltyService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="LOYALTY-SERVICE"/>
+    </bean>
+    
+    <bean id="auditService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="AUDIT-SERVICE"/>
+    </bean>
+    
+    <!-- Cross-Cutting Services -->
+    <bean id="emailNotificationService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="EMAIL-NOTIFICATION-SERVICE"/>
+    </bean>
+    
+    <bean id="analyticsService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="ANALYTICS-SERVICE"/>
+    </bean>
+    
+    <bean id="reportingService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="REPORTING-SERVICE"/>
+    </bean>
+
+    <!-- ================================================================= -->
+    <!-- EIP PATTERN 11: PUBLISH-SUBSCRIBE CHANNEL 📡                   -->
+    <!-- PURPOSE: Broadcast events to multiple independent subscribers    -->
+    <!-- BUSINESS VALUE: Event-driven architecture, loose coupling        -->
+    <!-- ================================================================= -->
+    
+    <!-- Multi-cast notification channel -->
+    <int:publish-subscribe-channel id="globalNotificationChannel"/>
+    
+    <!-- Bridge high-priority events to global notifications -->
+    <int:bridge input-channel="customerEventChannel"
+                output-channel="globalNotificationChannel"/>
+    
+    <!-- Global notification subscribers -->
+    <int:service-activator input-channel="globalNotificationChannel"
+                           ref="smsService"
+                           method="sendSMS"/>
+    <int:service-activator input-channel="globalNotificationChannel"
+                           ref="slackService"
+                           method="sendSlackMessage"/>
+    
+    <bean id="smsService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="SMS-SERVICE"/>
+    </bean>
+    
+    <bean id="slackService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="SLACK-SERVICE"/>
+    </bean>
+
+    <!-- ================================================================= -->
+    <!-- HTTP ENDPOINTS FOR TESTING ROUTING 🌐                          -->
+    <!-- ================================================================= -->
+    
+    <!-- JSON Order endpoint -->
+    <int-http:inbound-gateway id="orderHttpEndpoint"
+                              supported-methods="POST"
+                              request-channel="jsonRoutingChannel"
+                              path="/api/orders"
+                              request-payload-type="java.lang.String"/>
+    
+    <!-- XML Inventory endpoint -->
+    <int-http:inbound-gateway id="inventoryHttpEndpoint"
+                              supported-methods="POST"
+                              request-channel="xmlRoutingChannel"
+                              path="/api/inventory"
+                              request-payload-type="java.lang.String"/>
+    
+    <!-- CSV Batch endpoint -->
+    <int-http:inbound-gateway id="batchHttpEndpoint"
+                              supported-methods="POST"
+                              request-channel="csvRoutingChannel"
+                              path="/api/batch"
+                              request-payload-type="java.lang.String"/>
+
+    <!-- ================================================================= -->
+    <!-- ERROR HANDLING FOR ROUTING 🚨                                   -->
+    <!-- ================================================================= -->
+    <int:service-activator input-channel="defaultRoutingChannel"
+                           ref="unhandledMessageService"
+                           method="handleUnknownContent"/>
+    
+    <bean id="unhandledMessageService" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="UNHANDLED-MESSAGE-SERVICE"/>
+    </bean>
+
+</beans>
