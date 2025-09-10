@@ -1,4 +1,13 @@
 spring:
   integration:
     xml:
-      locations: optional:file:/tmp/integration.xml
+      locations:
+        - optional:file:./tmp/eip-basic-transforms.xml
+
+# Add debug logging
+logging:
+  level:
+    org.springframework.integration: DEBUG
+    org.springframework.beans.factory: DEBUG
+    com.ads.apiseng: DEBUG
+    ROOT: INFO

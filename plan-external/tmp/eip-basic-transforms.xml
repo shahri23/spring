@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SIMPLIFIED EIP BASIC - Uses only your existing SimpleHandler class
+Replace your tmp/eip-basic-transforms.xml with this version
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/integration
+           https://www.springframework.org/schema/integration/spring-integration.xsd
+           http://www.springframework.org/schema/integration/http
+           https://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
+
+    <!-- BASIC CHANNELS -->
+    <int:channel id="inputChannel"/>
+    <int:channel id="enrichmentChannel"/>
+    <int:channel id="validationChannel"/> 
+    <int:channel id="transformationChannel"/>
+    <int:channel id="outputChannel"/>
+    <int:channel id="invalidMessageChannel"/>
+
+    <!-- MESSAGE ENRICHER: Add metadata to messages -->
+    <int:enricher id="messageEnricher"
+                  input-channel="inputChannel"
+                  output-channel="validationChannel">
+        <int:header name="timestamp" expression="T(System).currentTimeMillis()"/>
+        <int:header name="correlationId" expression="T(java.util.UUID).randomUUID().toString()"/>
+        <int:header name="source" value="EIP-BASIC-DEMO"/>
+        <int:header name="stage" value="ENRICHED"/>
+    </int:enricher>
+
+    <!-- MESSAGE FILTER: Validate messages -->
+    <int:filter id="messageValidator"
+                input-channel="validationChannel"
+                output-channel="transformationChannel"
+                discard-channel="invalidMessageChannel"
+                expression="payload != null and payload.toString().trim().length() > 0"/>
+
+    <!-- MESSAGE TRANSFORMER: Convert to uppercase -->
+    <int:transformer id="messageTransformer"
+                     input-channel="transformationChannel"
+                     output-channel="outputChannel"
+                     expression="'PROCESSED: ' + payload.toString().toUpperCase()"/>
+
+    <!-- SERVICE ACTIVATOR: Process messages -->
+    <int:service-activator input-channel="outputChannel"
+                           ref="messageProcessor"
+                           method="handle"/>
+    
+    <bean id="messageProcessor" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="BASIC-PROCESSOR"/>
+    </bean>
+
+    <!-- DEAD LETTER HANDLER: Handle invalid messages -->
+    <int:service-activator input-channel="invalidMessageChannel"
+                           ref="errorHandler"
+                           method="handle"/>
+    
+    <bean id="errorHandler" class="com.ads.apiseng.handlers.SimpleHandler">
+        <constructor-arg value="ERROR-HANDLER"/>
+    </bean>
+
+    <!-- HTTP ENDPOINT: Test interface -->
+    <int-http:inbound-gateway id="httpEndpoint"
+                              supported-methods="POST"
+                              request-channel="inputChannel"
+                              path="/api/basic-transform"
+                              reply-timeout="30000"/>
+
+</beans>
