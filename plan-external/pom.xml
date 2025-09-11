@@ -32,16 +32,28 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
         
-        <!-- Spring Integration Core - Contains all we need -->
+        <!-- Spring Integration Core -->
         <dependency>
             <groupId>org.springframework.integration</groupId>
             <artifactId>spring-integration-core</artifactId>
+        </dependency>
+        
+        <!-- Spring Integration HTTP Support -->
+        <dependency>
+            <groupId>org.springframework.integration</groupId>
+            <artifactId>spring-integration-http</artifactId>
         </dependency>
         
         <!-- Spring Integration XML Support -->
         <dependency>
             <groupId>org.springframework.integration</groupId>
             <artifactId>spring-integration-xml</artifactId>
+        </dependency>
+        
+        <!-- Spring Integration File Support -->
+        <dependency>
+            <groupId>org.springframework.integration</groupId>
+            <artifactId>spring-integration-file</artifactId>
         </dependency>
         
         <!-- Jackson for JSON processing -->

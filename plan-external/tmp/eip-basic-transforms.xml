@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-SIMPLIFIED EIP BASIC - Uses only your existing SimpleHandler class
-Replace your tmp/eip-basic-transforms.xml with this version
--->
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:int="http://www.springframework.org/schema/integration"
        xmlns:int-http="http://www.springframework.org/schema/integration/http"
@@ -16,7 +12,6 @@ Replace your tmp/eip-basic-transforms.xml with this version
 
     <!-- BASIC CHANNELS -->
     <int:channel id="inputChannel"/>
-    <int:channel id="enrichmentChannel"/>
     <int:channel id="validationChannel"/> 
     <int:channel id="transformationChannel"/>
     <int:channel id="outputChannel"/>
@@ -71,4 +66,3 @@ Replace your tmp/eip-basic-transforms.xml with this version
                               reply-timeout="30000"/>
 
 </beans>
-
