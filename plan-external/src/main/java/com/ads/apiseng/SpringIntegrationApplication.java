@@ -2,8 +2,15 @@ package com.ads.apiseng;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ImportResource;
+
 
 @SpringBootApplication
+@ImportResource({
+    "file:./tmp/eip-basic-transforms.xml",
+    "file:./tmp/eip-routing-pubsub.xml"
+    // "file:/tmp/eip-advanced-patterns.xml"
+})
 public class SpringIntegrationApplication {
 
     public static void main(String[] args) {

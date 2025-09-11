@@ -12,57 +12,54 @@
 
     <!-- BASIC CHANNELS -->
     <int:channel id="inputChannel"/>
-    <int:channel id="validationChannel"/> 
+    <int:channel id="validationChannel"/>
     <int:channel id="transformationChannel"/>
     <int:channel id="outputChannel"/>
     <int:channel id="invalidMessageChannel"/>
 
-    <!-- MESSAGE ENRICHER: Add metadata to messages -->
+    <!-- MESSAGE ENRICHER -->
     <int:enricher id="messageEnricher"
                   input-channel="inputChannel"
                   output-channel="validationChannel">
-        <int:header name="timestamp" expression="T(System).currentTimeMillis()"/>
+        <int:header name="enrichedTimestamp" expression="T(System).currentTimeMillis()"/>
         <int:header name="correlationId" expression="T(java.util.UUID).randomUUID().toString()"/>
-        <int:header name="source" value="EIP-BASIC-DEMO"/>
-        <int:header name="stage" value="ENRICHED"/>
+        <int:header name="source" expression="'EIP-BASIC-DEMO'"/>
+        <int:header name="stage" expression="'ENRICHED'"/>
     </int:enricher>
 
-    <!-- MESSAGE FILTER: Validate messages -->
+    <!-- MESSAGE FILTER -->
     <int:filter id="messageValidator"
                 input-channel="validationChannel"
                 output-channel="transformationChannel"
                 discard-channel="invalidMessageChannel"
                 expression="payload != null and payload.toString().trim().length() > 0"/>
 
-    <!-- MESSAGE TRANSFORMER: Convert to uppercase -->
+    <!-- MESSAGE TRANSFORMER -->
     <int:transformer id="messageTransformer"
                      input-channel="transformationChannel"
                      output-channel="outputChannel"
                      expression="'PROCESSED: ' + payload.toString().toUpperCase()"/>
 
-    <!-- SERVICE ACTIVATOR: Process messages -->
+    <!-- SERVICE ACTIVATOR -->
     <int:service-activator input-channel="outputChannel"
                            ref="messageProcessor"
                            method="handle"/>
-    
     <bean id="messageProcessor" class="com.ads.apiseng.handlers.SimpleHandler">
         <constructor-arg value="BASIC-PROCESSOR"/>
     </bean>
 
-    <!-- DEAD LETTER HANDLER: Handle invalid messages -->
+    <!-- DEAD LETTER HANDLER -->
     <int:service-activator input-channel="invalidMessageChannel"
                            ref="errorHandler"
                            method="handle"/>
-    
     <bean id="errorHandler" class="com.ads.apiseng.handlers.SimpleHandler">
         <constructor-arg value="ERROR-HANDLER"/>
     </bean>
 
-    <!-- HTTP ENDPOINT: Test interface -->
+    <!-- HTTP ENDPOINT -->
     <int-http:inbound-gateway id="httpEndpoint"
                               supported-methods="POST"
                               request-channel="inputChannel"
                               path="/api/basic-transform"
                               reply-timeout="30000"/>
-
 </beans>

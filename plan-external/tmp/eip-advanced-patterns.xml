@@ -22,13 +22,13 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
     <!-- ADVANCED PATTERN CHANNELS -->
     <int:channel id="aggregationInputChannel"/>
     <int:channel id="aggregatedResultChannel"/>
-    <int:channel id="scatterChannel"/>
-    <int:channel id="gatherChannel"/>
     <int:publish-subscribe-channel id="scatterPubSubChannel"/>
+    <int:channel id="gatherChannel"/>
     <int:channel id="fileInputChannel"/>
     <int:channel id="fileProcessingChannel"/>
     <int:channel id="retryChannel"/>
     <int:channel id="controlChannel"/>
+    <int:channel id="fileOutputChannel"/>
 
     <!-- MESSAGE STORE -->
     <bean id="messageStore" 
@@ -53,17 +53,15 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
     </bean>
 
     <!-- SCATTER-GATHER PATTERN -->
-    <int:publish-subscribe-channel id="scatterChannel"/>
-    
-    <int:service-activator input-channel="scatterChannel"
+    <int:service-activator input-channel="scatterPubSubChannel"
                            output-channel="gatherChannel"
                            ref="processorA"
                            method="handle"/>
-    <int:service-activator input-channel="scatterChannel"
+    <int:service-activator input-channel="scatterPubSubChannel"
                            output-channel="gatherChannel"
                            ref="processorB"
                            method="handle"/>
-    <int:service-activator input-channel="scatterChannel"
+    <int:service-activator input-channel="scatterPubSubChannel"
                            output-channel="gatherChannel"
                            ref="processorC"
                            method="handle"/>
@@ -101,8 +99,6 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
                      output-channel="fileOutputChannel"
                      expression="'PROCESSED: ' + payload"/>
     
-    <int:channel id="fileOutputChannel"/>
-    
     <int-file:outbound-channel-adapter id="fileOutputAdapter"
                                        directory="/tmp/output"
                                        channel="fileOutputChannel"
@@ -129,7 +125,7 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
     
     <int-http:inbound-gateway id="scatterGatherTestEndpoint"
                               supported-methods="POST"
-                              request-channel="scatterChannel"
+                              request-channel="scatterPubSubChannel"
                               path="/api/advanced/scatter-gather"/>
     
     <int-http:inbound-gateway id="retryTestEndpoint"

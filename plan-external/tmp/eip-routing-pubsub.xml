@@ -35,6 +35,7 @@ EIP DEMO FILE 2: ROUTING & PUBLISH-SUBSCRIBE PATTERNS (CORRECTED)
     <!-- CSV PROCESSING CHANNELS -->
     <int:channel id="csvItemChannel"/>
     <int:channel id="processedItemChannel"/>
+    <int:channel id="csvStringChannel"/>
 
     <!-- ASYNC EXECUTOR -->
     <bean id="routingAsyncExecutor" 
@@ -53,20 +54,35 @@ EIP DEMO FILE 2: ROUTING & PUBLISH-SUBSCRIBE PATTERNS (CORRECTED)
                            (payload.toString().contains(',') ? 'csvRoutingChannel' : 'defaultRoutingChannel'))">
     </int:router>
 
-    <!-- MESSAGE SPLITTER FOR CSV -->
+    <!-- HTTP BYTE ARRAY TO STRING TRANSFORMERS -->
+    <int:transformer input-channel="jsonRoutingChannel"
+                     output-channel="orderEventChannel"
+                     expression="new java.lang.String(payload, 'UTF-8')"/>
+
+    <int:transformer input-channel="xmlRoutingChannel"
+                     output-channel="inventoryEventChannel"
+                     expression="new java.lang.String(payload, 'UTF-8')"/>
+
+    <int:transformer input-channel="csvRoutingChannel"
+                 output-channel="csvStringChannel"
+                 expression="payload instanceof T(java.lang.String) ? payload : new java.lang.String(payload, 'UTF-8')"/>
+
+    <!-- <int:transformer input-channel="csvRoutingChannel"
+                     output-channel="csvStringChannel"
+                     expression="new java.lang.String(payload, 'UTF-8')"/> -->
+                     
+    <!-- CSV PROCESSING -->
     <int:splitter id="csvMessageSplitter"
-                  input-channel="csvRoutingChannel"
+                  input-channel="csvStringChannel"
                   output-channel="csvItemChannel"
                   expression="payload.toString().split(',')"
                   apply-sequence="true"/>
     
-    <!-- PROCESS CSV ITEMS -->
     <int:transformer id="csvItemProcessor"
                      input-channel="csvItemChannel"
                      output-channel="processedItemChannel"
                      expression="'ITEM: ' + payload.toString().trim()"/>
 
-    <!-- SEND TO INVENTORY -->
     <int:service-activator input-channel="processedItemChannel"
                            output-channel="inventoryEventChannel"
                            ref="csvItemHandler"
@@ -76,7 +92,7 @@ EIP DEMO FILE 2: ROUTING & PUBLISH-SUBSCRIBE PATTERNS (CORRECTED)
         <constructor-arg value="CSV-ITEM-PROCESSOR"/>
     </bean>
 
-    <!-- SERVICE SUBSCRIBERS -->
+    <!-- ORDER EVENT SUBSCRIBERS (PUB/SUB) -->
     <int:service-activator input-channel="orderEventChannel"
                            ref="orderService"
                            method="handle"/>
@@ -90,6 +106,7 @@ EIP DEMO FILE 2: ROUTING & PUBLISH-SUBSCRIBE PATTERNS (CORRECTED)
                            ref="analyticsService"
                            method="handle"/>
     
+    <!-- INVENTORY EVENT SUBSCRIBERS (PUB/SUB) -->
     <int:service-activator input-channel="inventoryEventChannel"
                            ref="inventoryService"
                            method="handle"/>
@@ -97,16 +114,6 @@ EIP DEMO FILE 2: ROUTING & PUBLISH-SUBSCRIBE PATTERNS (CORRECTED)
                            ref="warehouseService"
                            method="handle"/>
     <int:service-activator input-channel="inventoryEventChannel"
-                           ref="auditService"
-                           method="handle"/>
-    
-    <int:service-activator input-channel="xmlRoutingChannel"
-                           ref="inventoryService"
-                           method="handle"/>
-    <int:service-activator input-channel="xmlRoutingChannel"
-                           ref="warehouseService"
-                           method="handle"/>
-    <int:service-activator input-channel="xmlRoutingChannel"
                            ref="auditService"
                            method="handle"/>
 
@@ -131,7 +138,13 @@ EIP DEMO FILE 2: ROUTING & PUBLISH-SUBSCRIBE PATTERNS (CORRECTED)
     </bean>
     
     <!-- DEFAULT HANDLER -->
-    <int:service-activator input-channel="defaultRoutingChannel"
+    <int:transformer input-channel="defaultRoutingChannel"
+                     output-channel="defaultStringChannel"
+                     expression="new java.lang.String(payload, 'UTF-8')"/>
+                     
+    <int:channel id="defaultStringChannel"/>
+    
+    <int:service-activator input-channel="defaultStringChannel"
                            ref="defaultHandler"
                            method="handle"/>
     
