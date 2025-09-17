@@ -2,13 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:int="http://www.springframework.org/schema/integration"
        xmlns:int-http="http://www.springframework.org/schema/integration/http"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-           https://www.springframework.org/schema/beans/spring-beans.xsd
-           http://www.springframework.org/schema/integration
-           https://www.springframework.org/schema/integration/spring-integration.xsd
-           http://www.springframework.org/schema/integration/http
-           https://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <!-- BASIC CHANNELS -->
     <int:channel id="inputChannel"/>
@@ -44,6 +38,7 @@
     <int:service-activator input-channel="outputChannel"
                            ref="messageProcessor"
                            method="handle"/>
+    
     <bean id="messageProcessor" class="com.ads.apiseng.handlers.SimpleHandler">
         <constructor-arg value="BASIC-PROCESSOR"/>
     </bean>
@@ -52,6 +47,7 @@
     <int:service-activator input-channel="invalidMessageChannel"
                            ref="errorHandler"
                            method="handle"/>
+    
     <bean id="errorHandler" class="com.ads.apiseng.handlers.SimpleHandler">
         <constructor-arg value="ERROR-HANDLER"/>
     </bean>
@@ -62,4 +58,5 @@
                               request-channel="inputChannel"
                               path="/api/basic-transform"
                               reply-timeout="30000"/>
+
 </beans>
