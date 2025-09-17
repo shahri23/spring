@@ -1,0 +1,23 @@
+spring:
+  integration:
+    xml:
+      locations:
+        - optional:file:./tmp/eip-basic-transforms.xml
+        - optional:file:./tmp/eip-routing-pubsub.xml
+        - optional:file:./tmp/eip-advanced-patterns.xml
+
+# Simplified logging to reduce overhead
+logging:
+  level:
+    org.springframework.integration: INFO
+    com.ads.apiseng: DEBUG
+    root: WARN
+  pattern:
+    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Reduce memory usage
+server:
+  port: 8080
+  tomcat:
+    max-threads: 10
+    min-spare-threads: 2
