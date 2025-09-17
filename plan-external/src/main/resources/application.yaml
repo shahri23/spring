@@ -2,22 +2,18 @@ spring:
   integration:
     xml:
       locations:
-        - optional:file:./tmp/eip-basic-transforms.xml
-        - optional:file:./tmp/eip-routing-pubsub.xml
-        - optional:file:./tmp/eip-advanced-patterns.xml
+        - optional:file:/spi/config/spi-config.xml  # Your actual path
+      validate-schema: false
+  xml:
+    ignore-dtd: true
+    ignore-schema-location: true
 
-# Simplified logging to reduce overhead
-logging:
-  level:
-    org.springframework.integration: INFO
-    com.ads.apiseng: DEBUG
-    root: WARN
-  pattern:
-    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-
-# Reduce memory usage
+# Add JVM args for schema resolution
 server:
   port: 8080
-  tomcat:
-    max-threads: 10
-    min-spare-threads: 2
+
+# Logging to debug schema issues
+logging:
+  level:
+    org.springframework.beans.factory.xml: DEBUG
+    org.springframework.integration: INFO
