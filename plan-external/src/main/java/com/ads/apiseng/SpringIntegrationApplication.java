@@ -4,17 +4,20 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ImportResource;
 
-
 @SpringBootApplication
 @ImportResource({
-    "file:/mnt/c/Users/shahz/OneDrive/Documents/GitHub/spring/plan-external/tmp/eip-basic-transforms.xml",
-    "file:/mnt/c/Users/shahz/OneDrive/Documents/GitHub/spring/plan-external/tmp/eip-routing-pubsub.xml"
-    // "file:/tmp/eip-advanced-patterns.xml"
+     "file:./spi-config.xml"
 })
 public class SpringIntegrationApplication {
 
     public static void main(String[] args) {
         System.out.println("🚀 Starting Spring Integration EIP Demo...");
+        
+        // DISABLE XML SCHEMA VALIDATION - Critical for OpenShift
+        System.setProperty("spring.xml.ignore-schema-location", "true");
+        System.setProperty("javax.xml.validation.SchemaFactory.disableCoreValidation", "true");
+        System.setProperty("javax.xml.parsers.DocumentBuilderFactory", 
+                          "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
         
         // Set JVM options for stability
         System.setProperty("java.awt.headless", "true");
@@ -24,6 +27,6 @@ public class SpringIntegrationApplication {
         app.run(args);
         
         System.out.println("✅ Application started successfully!");
-        System.out.println("📖 Check README.md for testing instructions");
+        System.out.println("📖 Test with: curl -X POST http://localhost:8080/api/basic-transform -d 'Hello World'");
     }
 }
