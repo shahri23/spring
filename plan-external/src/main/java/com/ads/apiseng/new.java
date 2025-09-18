@@ -1,30 +1,45 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!DOCTYPE beans [
-    <!ENTITY % dummy "">
-]>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:int="http://www.springframework.org/schema/integration"
-       xmlns:int-http="http://www.springframework.org/schema/integration/http">
+package com.ads.apiseng;
 
-    <int:channel id="inputChannel"/>
-    <int:channel id="outputChannel"/>
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ImportResource;
 
-    <int:transformer id="messageTransformer"
-                     input-channel="inputChannel"
-                     output-channel="outputChannel"
-                     expression="'PROCESSED: ' + payload.toString().toUpperCase()"/>
+@SpringBootApplication
+@ImportResource({
+     "file:./spi-config.xml"
+})
+public class SpringIntegrationApplication {
 
-    <int:service-activator input-channel="outputChannel"
-                           ref="messageProcessor"
-                           method="handle"/>
-    
-    <bean id="messageProcessor" class="com.ads.apiseng.handlers.SimpleHandler">
-        <constructor-arg value="BASIC-PROCESSOR"/>
-    </bean>
-
-    <int-http:inbound-gateway id="httpEndpoint"
-                              supported-methods="POST"
-                              request-channel="inputChannel"
-                              path="/api/basic-transform"/>
-
-</beans>
+    public static void main(String[] args) {
+        System.out.println("🚀 Starting Spring Integration EIP Demo...");
+        
+        // DISABLE ALL XML VALIDATION - Multiple approaches
+        System.setProperty("spring.xml.ignore-schema-location", "true");
+        System.setProperty("spring.xml.ignore-dtd", "true");
+        System.setProperty("javax.xml.parsers.SAXParserFactory", 
+                          "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
+        System.setProperty("javax.xml.parsers.DocumentBuilderFactory", 
+                          "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+        System.setProperty("javax.xml.validation.SchemaFactory", 
+                          "com.sun.org.apache.xerces.internal.jaxp.validation.XMLSchemaFactory");
+        
+        // Additional XML processing properties
+        System.setProperty("org.xml.sax.driver", "com.sun.org.apache.xerces.internal.parsers.SAXParser");
+        System.setProperty("javax.xml.accessExternalDTD", "all");
+        System.setProperty("javax.xml.accessExternalSchema", "all");
+        
+        // Set JVM options for stability
+        System.setProperty("java.awt.headless", "true");
+        System.setProperty("spring.backgroundpreinitializer.ignore", "true");
+        
+        SpringApplication app = new SpringApplication(SpringIntegrationApplication.class);
+        
+        // Add additional Spring properties programmatically
+        System.setProperty("spring.main.allow-bean-definition-overriding", "true");
+        
+        app.run(args);
+        
+        System.out.println("✅ Application started successfully!");
+        System.out.println("📖 Test with: curl -X POST http://localhost:8080/api/basic-transform -d 'Hello World'");
+    }
+}
