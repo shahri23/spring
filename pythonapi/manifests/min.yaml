@@ -1,0 +1,67 @@
+# MINIMUM REQUIRED ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-sync-config
+  namespace: vault-sync
+data:
+  # REQUIRED: Secret mappings file
+  secret-mappings.yaml: |
+    mappings:
+      - vault_path: "secret/myapp/database"     # REQUIRED: Vault secret path
+        vault_key: "password"                  # REQUIRED: Key in vault secret  
+        openshift_secret: "myapp-db-secret"    # REQUIRED: Target OpenShift secret name
+        openshift_key: "db-password"           # REQUIRED: Key in OpenShift secret
+
+---
+# MINIMUM REQUIRED Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-credentials
+  namespace: vault-sync
+type: Opaque
+data:
+  # REQUIRED: Base64 encoded Vault Role ID
+  vault-role-id: bXktcm9sZS1pZA==  # Replace with: echo -n "your-role-id" | base64
+  
+  # REQUIRED: Base64 encoded Vault Secret ID  
+  vault-secret-id: bXktc2VjcmV0LWlk  # Replace with: echo -n "your-secret-id" | base64
+
+---
+# MINIMUM REQUIRED Environment Variables in Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-sync-service
+  namespace: vault-sync
+spec:
+  template:
+    spec:
+      containers:
+      - name: vault-sync
+        image: vault-sync-service:latest
+        env:
+        # REQUIRED: Vault server address
+        - name: VAULT_ADDRESS
+          value: "https://your-vault-server.com"
+        
+        # REQUIRED: Vault credentials from secret
+        - name: VAULT_ROLE_ID
+          valueFrom:
+            secretKeyRef:
+              name: vault-credentials
+              key: vault-role-id
+        - name: VAULT_SECRET_ID
+          valueFrom:
+            secretKeyRef:
+              name: vault-credentials
+              key: vault-secret-id
+        
+        # OPTIONAL: Will use defaults if not provided
+        - name: OPENSHIFT_NAMESPACE
+          value: "default"  # Default namespace to update secrets
+        - name: VAULT_MOUNT_PATH
+          value: "secret"   # Default: "secret"
+        - name: SECRET_MAPPINGS_FILE
+          value: "/app/config/secret-mappings.yaml"  # Default path

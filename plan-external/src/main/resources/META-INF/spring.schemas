@@ -1,0 +1,13 @@
+# Local schema resolution - no external network calls
+https\://www.springframework.org/schema/beans/spring-beans.xsd=org/springframework/beans/factory/xml/spring-beans.xsd
+https\://www.springframework.org/schema/integration/spring-integration.xsd=org/springframework/integration/config/xml/spring-integration.xsd
+https\://www.springframework.org/schema/integration/http/spring-integration-http.xsd=org/springframework/integration/http/config/xml/spring-integration-http.xsd
+https\://www.springframework.org/schema/integration/file/spring-integration-file.xsd=org/springframework/integration/file/config/xml/spring-integration-file.xsd
+https\://www.springframework.org/schema/task/spring-task.xsd=org/springframework/scheduling/config/xml/spring-task.xsd
+
+# HTTP versions (some corporate networks redirect HTTPS to HTTP)
+http\://www.springframework.org/schema/beans/spring-beans.xsd=org/springframework/beans/factory/xml/spring-beans.xsd
+http\://www.springframework.org/schema/integration/spring-integration.xsd=org/springframework/integration/config/xml/spring-integration.xsd
+http\://www.springframework.org/schema/integration/http/spring-integration-http.xsd=org/springframework/integration/http/config/xml/spring-integration-http.xsd
+http\://www.springframework.org/schema/integration/file/spring-integration-file.xsd=org/springframework/integration/file/config/xml/spring-integration-file.xsd
+http\://www.springframework.org/schema/task/spring-task.xsd=org/springframework/scheduling/config/xml/spring-task.xsd

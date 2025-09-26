@@ -1,0 +1,215 @@
+# kubernetes-manifests.yaml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-sync-config
+  namespace: vault-sync
+data:
+  secret-mappings.yaml: |
+    mappings:
+      - vault_path: "secret/app1/database"
+        vault_key: "password"
+        openshift_secret: "app1-db-secret"
+        openshift_key: "db-password"
+      - vault_path: "secret/app1/api"
+        vault_key: "api_key"
+        openshift_secret: "app1-api-secret"
+        openshift_key: "api-key"
+      - vault_path: "secret/shared/certificates"
+        vault_key: "tls_cert"
+        openshift_secret: "shared-tls-secret"
+        openshift_key: "tls.crt"
+      - vault_path: "secret/shared/certificates"
+        vault_key: "tls_key"
+        openshift_secret: "shared-tls-secret"
+        openshift_key: "tls.key"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-credentials
+  namespace: vault-sync
+type: Opaque
+data:
+  # Base64 encoded values - replace with actual values
+  vault-role-id: <base64-encoded-role-id>
+  vault-secret-id: <base64-encoded-secret-id>
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-sync-sa
+  namespace: vault-sync
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vault-sync-secrets-manager
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "create", "update", "patch"]
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault-sync-secrets-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: vault-sync-secrets-manager
+subjects:
+- kind: ServiceAccount
+  name: vault-sync-sa
+  namespace: vault-sync
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-sync-service
+  namespace: vault-sync
+  labels:
+    app: vault-sync-service
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault-sync-service
+  template:
+    metadata:
+      labels:
+        app: vault-sync-service
+        version: v1
+    spec:
+      serviceAccountName: vault-sync-sa
+      containers:
+      - name: vault-sync
+        image: vault-sync-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        # Vault Configuration
+        - name: VAULT_ADDRESS
+          value: "https://vault.example.com"
+        - name: VAULT_ROLE_ID
+          valueFrom:
+            secretKeyRef:
+              name: vault-credentials
+              key: vault-role-id
+        - name: VAULT_SECRET_ID
+          valueFrom:
+            secretKeyRef:
+              name: vault-credentials
+              key: vault-secret-id
+        - name: VAULT_MOUNT_PATH
+          value: "secret"
+        
+        # OpenShift Configuration
+        - name: OPENSHIFT_NAMESPACE
+          value: "default"
+        
+        # Application Configuration
+        - name: SECRET_MAPPINGS_FILE
+          value: "/app/config/secret-mappings.yaml"
+        - name: HTTP_TIMEOUT
+          value: "30"
+        - name: MAX_RETRIES
+          value: "3"
+        - name: PORT
+          value: "8000"
+        
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+          readOnly: true
+        
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      
+      volumes:
+      - name: config-volume
+        configMap:
+          name: vault-sync-config
+      
+      securityContext:
+        fsGroup: 1000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-sync-service
+  namespace: vault-sync
+  labels:
+    app: vault-sync-service
+spec:
+  selector:
+    app: vault-sync-service
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP
+
+---
+# Optional: Route for external access (OpenShift specific)
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: vault-sync-service
+  namespace: vault-sync
+spec:
+  to:
+    kind: Service
+    name: vault-sync-service
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
