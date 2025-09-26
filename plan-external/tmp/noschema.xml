@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN 2.0//EN" 
+    "http://www.springframework.org/dtd/spring-beans-2.0.dtd">
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:int="http://www.springframework.org/schema/integration"
-       xmlns:int-http="http://www.springframework.org/schema/integration/http"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+       xmlns:int-http="http://www.springframework.org/schema/integration/http">
 
     <!-- NO xsi:schemaLocation - This prevents ALL external schema calls -->
 
