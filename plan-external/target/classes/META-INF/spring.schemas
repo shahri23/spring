@@ -1,0 +1,22 @@
+# Local schema resolution - CORRECTED CLASSPATH MAPPINGS
+https\://www.springframework.org/schema/beans/spring-beans.xsd=org/springframework/beans/factory/xml/spring-beans.xsd
+https\://www.springframework.org/schema/integration/spring-integration.xsd=org/springframework/integration/config/xml/spring-integration.xsd
+https\://www.springframework.org/schema/integration/http/spring-integration-http.xsd=org/springframework/integration/http/config/xml/spring-integration-http.xsd
+https\://www.springframework.org/schema/integration/file/spring-integration-file.xsd=org/springframework/integration/file/config/xml/spring-integration-file.xsd
+https\://www.springframework.org/schema/task/spring-task.xsd=org/springframework/scheduling/config/xml/spring-task.xsd
+
+# HTTP versions (corporate networks sometimes redirect HTTPS to HTTP)
+http\://www.springframework.org/schema/beans/spring-beans.xsd=org/springframework/beans/factory/xml/spring-beans.xsd
+http\://www.springframework.org/schema/integration/spring-integration.xsd=org/springframework/integration/config/xml/spring-integration.xsd
+http\://www.springframework.org/schema/integration/http/spring-integration-http.xsd=org/springframework/integration/http/config/xml/spring-integration-http.xsd
+http\://www.springframework.org/schema/integration/file/spring-integration-file.xsd=org/springframework/integration/file/config/xml/spring-integration-file.xsd
+http\://www.springframework.org/schema/task/spring-task.xsd=org/springframework/scheduling/config/xml/spring-task.xsd
+
+# Version-specific schemas (some Spring versions use these)
+https\://www.springframework.org/schema/beans/spring-beans-6.1.xsd=org/springframework/beans/factory/xml/spring-beans.xsd
+https\://www.springframework.org/schema/integration/spring-integration-6.2.xsd=org/springframework/integration/config/xml/spring-integration.xsd
+https\://www.springframework.org/schema/integration/http/spring-integration-http-6.2.xsd=org/springframework/integration/http/config/xml/spring-integration-http.xsd
+
+# Alternative mapping (if above doesn't work)
+https\://www.springframework.org/schema/integration/http/spring-integration-http.xsd=META-INF/spring-integration-http.xsd
+http\://www.springframework.org/schema/integration/http/spring-integration-http.xsd=META-INF/spring-integration-http.xsd

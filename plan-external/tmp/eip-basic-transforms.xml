@@ -13,8 +13,6 @@
     <!-- BASIC CHANNELS -->
     <int:channel id="inputChannel"/>
     <int:channel id="validationChannel"/>
-    <int:channel id="transformationChannel"/>
-    <int:channel id="outputChannel"/>
     <int:channel id="invalidMessageChannel"/>
 
     <!-- MESSAGE ENRICHER -->
@@ -37,29 +35,29 @@
     <!-- MESSAGE TRANSFORMER -->
     <int:transformer id="messageTransformer"
                      input-channel="transformationChannel"
-                     output-channel="outputChannel"
+                     output-channel="processedChannel"
                      expression="'PROCESSED: ' + payload.toString().toUpperCase()"/>
 
-    <!-- SERVICE ACTIVATOR -->
-    <int:service-activator input-channel="outputChannel"
-                           ref="messageProcessor"
-                           method="handle"/>
-    <bean id="messageProcessor" class="com.ads.apiseng.handlers.SimpleHandler">
-        <constructor-arg value="BASIC-PROCESSOR"/>
-    </bean>
+    <!-- PUBLISH-SUBSCRIBE CHANNEL (reply + logging) -->
+    <int:publish-subscribe-channel id="processedChannel"/>
+
+    <!-- LOGGER: log only the payload after processing -->
+    <int:logging-channel-adapter id="processedLogger"
+                                 channel="processedChannel"
+                                 level="INFO"
+                                 expression="payload"/>
 
     <!-- DEAD LETTER HANDLER -->
-    <int:service-activator input-channel="invalidMessageChannel"
-                           ref="errorHandler"
-                           method="handle"/>
-    <bean id="errorHandler" class="com.ads.apiseng.handlers.SimpleHandler">
-        <constructor-arg value="ERROR-HANDLER"/>
-    </bean>
+    <int:logging-channel-adapter id="errorHandler"
+                                 channel="invalidMessageChannel"
+                                 level="ERROR"
+                                 log-full-message="true"/>
 
     <!-- HTTP ENDPOINT -->
     <int-http:inbound-gateway id="httpEndpoint"
                               supported-methods="POST"
                               request-channel="inputChannel"
+                              reply-channel="processedChannel"
                               path="/api/basic-transform"
-                              reply-timeout="30000"/>
+                              reply-timeout="3000"/>
 </beans>

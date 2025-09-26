@@ -1,53 +1,39 @@
-# Replace your current src/main/resources/application.yml with this:
-
 spring:
+  main:
+    allow-bean-definition-overriding: true
+  
+  # CRITICAL: Disable all XML validation for corporate networks
+  xml:
+    ignore-dtd: true
+    ignore-schema-location: true
+    ignore-validation: true
+    
+  # Enhanced XML processing settings
+  beans:
+    xml:
+      ignore-validation-mode: true
+  
   integration:
     xml:
-      locations:
-        # Load from your project's tmp directory (relative path)
-        - optional:file:./tmp/eip-basic-transforms.xml
-        - optional:file:./tmp/eip-routing-pubsub.xml  
-        - optional:file:./tmp/eip-advanced-patterns.xml
+      validate-schema: false
+    readOnly:
+      headers: false
+
+server:
+  port: 8080
+
+# Disable unnecessary features that might cause network issues
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
         
-  # Optional: Profile-based loading for testing
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE:demo}
-
----
-# Profile for loading only basic patterns
-spring:
-  profiles: basic
-  integration:
-    xml:
-      locations:
-        - optional:file:./tmp/eip-basic-transforms.xml
-
----        
-# Profile for basic + routing patterns
-spring:
-  profiles: intermediate
-  integration:
-    xml:
-      locations:
-        - optional:file:./tmp/eip-basic-transforms.xml
-        - optional:file:./tmp/eip-routing-pubsub.xml
-
----
-# Profile for all patterns (default)
-spring:
-  profiles: demo
-  integration:
-    xml:
-      locations:
-        - optional:file:./tmp/eip-basic-transforms.xml
-        - optional:file:./tmp/eip-routing-pubsub.xml  
-        - optional:file:./tmp/eip-advanced-patterns.xml
-
-# Logging configuration to see EIP patterns in action
+# Logging - reduce XML validation noise
 logging:
   level:
+    org.springframework.beans.factory.xml: ERROR
+    org.xml.sax: ERROR
+    javax.xml: ERROR
     org.springframework.integration: INFO
     com.ads.apiseng: DEBUG
-    ROOT: INFO
-  pattern:
-    console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
