@@ -1,27 +1,39 @@
-# Corporate Network Configuration
-server.port=8080
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  
+  # CRITICAL: Disable all XML validation for corporate networks
+  xml:
+    ignore-dtd: true
+    ignore-schema-location: true
+    ignore-validation: true
+    
+  # Enhanced XML processing settings
+  beans:
+    xml:
+      ignore-validation-mode: true
+  
+  integration:
+    xml:
+      validate-schema: false
+    readOnly:
+      headers: false
 
-# Disable XML validation - CRITICAL for corporate networks
-spring.xml.ignore-dtd=true
-spring.xml.ignore-schema-location=true
-spring.xml.ignore-validation=true
-javax.xml.accessExternalDTD=""
-javax.xml.accessExternalSchema=""
+server:
+  port: 8080
 
-# Spring Integration settings
-spring.integration.xml.validate-schema=false
-spring.integration.readOnly.headers=false
-spring.main.allow-bean-definition-overriding=true
-
-# Enhanced XML processing
-spring.beans.xml.ignore-validation-mode=true
-
-# Logging - reduce XML noise
-logging.level.org.springframework.beans.factory.xml=ERROR
-logging.level.org.xml.sax=ERROR
-logging.level.javax.xml=ERROR
-logging.level.org.springframework.integration=INFO
-logging.level.com.ads.apiseng=DEBUG
-
-# Disable health check features that might cause network calls
-management.endpoints.web.exposure.include=health
+# Disable unnecessary features that might cause network issues
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+        
+# Logging - reduce XML validation noise
+logging:
+  level:
+    org.springframework.beans.factory.xml: ERROR
+    org.xml.sax: ERROR
+    javax.xml: ERROR
+    org.springframework.integration: INFO
+    com.ads.apiseng: DEBUG
