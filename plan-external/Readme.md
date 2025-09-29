@@ -68,7 +68,7 @@ curl -X POST http://localhost:8080/api/batch \
 - **Control Bus**
 
 ```bash
-# Aggregator
+# Aggregator (must include correlationId header exactly as shown)
 curl -X POST http://localhost:8080/api/advanced/aggregate -H "correlationId: ORDER-123" -d "Part 1"
 curl -X POST http://localhost:8080/api/advanced/aggregate -H "correlationId: ORDER-123" -d "Part 2"
 curl -X POST http://localhost:8080/api/advanced/aggregate -H "correlationId: ORDER-123" -d "Part 3"

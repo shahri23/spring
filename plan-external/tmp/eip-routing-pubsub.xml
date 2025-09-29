@@ -127,6 +127,11 @@
     <int:logging-channel-adapter channel="orderEventChannel"
                                  level="INFO"
                                  expression="'[ANALYTICS-SERVICE] received: ' + payload"/>
+    <!-- ORDER REPLY -->
+    <int:transformer input-channel="orderEventChannel"
+                     output-channel="orderReplyChannel"
+                     expression="'Order processed: ' + payload"/>
+    <int:channel id="orderReplyChannel"/>
 
     <!-- INVENTORY EVENT SUBSCRIBERS -->
     <int:logging-channel-adapter channel="inventoryEventChannel"
@@ -138,6 +143,11 @@
     <int:logging-channel-adapter channel="inventoryEventChannel"
                                  level="INFO"
                                  expression="'[AUDIT-SERVICE] received: ' + payload"/>
+    <!-- INVENTORY REPLY -->
+    <int:transformer input-channel="inventoryEventChannel"
+                     output-channel="inventoryReplyChannel"
+                     expression="'Inventory processed: ' + payload"/>
+    <int:channel id="inventoryReplyChannel"/>
 
     <!-- DEFAULT HANDLER -->
     <int:transformer input-channel="defaultRoutingChannel"
@@ -151,15 +161,18 @@
     <int-http:inbound-gateway id="orderHttpEndpoint"
                               supported-methods="POST"
                               request-channel="jsonRoutingChannel"
+                              reply-channel="orderReplyChannel"
                               path="/api/orders"/>
 
     <int-http:inbound-gateway id="inventoryHttpEndpoint"
                               supported-methods="POST"
                               request-channel="xmlRoutingChannel"
+                              reply-channel="inventoryReplyChannel"
                               path="/api/inventory"/>
 
     <int-http:inbound-gateway id="batchHttpEndpoint"
                               supported-methods="POST"
                               request-channel="csvRoutingChannel"
+                              reply-channel="inventoryReplyChannel"
                               path="/api/batch"/>
 </beans>

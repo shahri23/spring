@@ -9,7 +9,7 @@ import org.springframework.context.annotation.ImportResource;
 @ImportResource({
     //"file:./tmp/eip-basic-transforms.xml",
     "file:./tmp/eip-routing-pubsub.xml"
-    // "file:/tmp/eip-advanced-patterns.xml"
+    //"file:${EIP_XML_PATH:file:./tmp/eip-advanced-patterns.xml}"
 })
 public class SpringIntegrationApplication {
 

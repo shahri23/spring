@@ -21,6 +21,7 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
 
     <!-- ADVANCED PATTERN CHANNELS -->
     <int:channel id="aggregationInputChannel"/>
+    <int:channel id="aggregatorReplyChannel"/>
     <int:channel id="aggregatedResultChannel"/>
     <int:publish-subscribe-channel id="scatterPubSubChannel"/>
     <int:channel id="gatherChannel"/>
@@ -38,7 +39,7 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
     <int:aggregator id="orderAggregator"
                     input-channel="aggregationInputChannel"
                     output-channel="aggregatedResultChannel"
-                    correlation-strategy-expression="headers.correlationId"
+                    correlation-strategy-expression="headers['correlationId']"
                     release-strategy-expression="size() >= 3 or T(System).currentTimeMillis() - timestamp > 10000"
                     message-store="messageStore"
                     send-partial-result-on-expiry="true"
@@ -53,6 +54,7 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
     <int:transformer input-channel="aggregatedResultChannel"
                      output-channel="aggregatorReplyChannel"
                      expression="'Aggregated: ' + payload"/>
+    <int:channel id="aggregatorReplyChannel"/>
 
     <!-- SCATTER-GATHER PATTERN -->
     <int:logging-channel-adapter channel="scatterPubSubChannel"
@@ -67,6 +69,11 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
     <int:logging-channel-adapter channel="gatherChannel"
                                  level="INFO"
                                  expression="'[SCATTER-GATHER] gather: ' + payload"/>
+    <!-- REPLY FOR SCATTER-GATHER HTTP -->
+    <int:transformer input-channel="gatherChannel"
+                     output-channel="scatterGatherReplyChannel"
+                     expression="'Scatter-Gather processed: ' + payload"/>
+    <int:channel id="scatterGatherReplyChannel"/>
 
     <!-- FILE INTEGRATION -->
     <int-file:inbound-channel-adapter id="fileInputAdapter"
@@ -95,6 +102,11 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
     <int:logging-channel-adapter channel="retryChannel"
                                  level="INFO"
                                  expression="'[FLAKY-SERVICE] received: ' + payload"/>
+    <!-- REPLY FOR RETRY HTTP -->
+    <int:transformer input-channel="retryChannel"
+                     output-channel="retryReplyChannel"
+                     expression="'Retry processed: ' + payload"/>
+    <int:channel id="retryReplyChannel"/>
 
     <!-- CONTROL BUS -->
     <int:control-bus id="controlBus" 
@@ -110,13 +122,13 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
     <int-http:inbound-gateway id="scatterGatherTestEndpoint"
                               supported-methods="POST"
                               request-channel="scatterPubSubChannel"
-                              reply-channel="gatherChannel"
+                              reply-channel="scatterGatherReplyChannel"
                               path="/api/advanced/scatter-gather"/>
 
     <int-http:inbound-gateway id="retryTestEndpoint"
                               supported-methods="POST"
                               request-channel="retryChannel"
-                              reply-channel="retryChannel"
+                              reply-channel="retryReplyChannel"
                               path="/api/advanced/retry"/>
 
     <int-http:inbound-gateway id="controlHttpGateway"
