@@ -43,38 +43,30 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
                     message-store="messageStore"
                     send-partial-result-on-expiry="true"
                     expire-groups-upon-completion="true"/>
-    
-    <int:service-activator input-channel="aggregatedResultChannel"
-                           ref="aggregationProcessor"
-                           method="handle"/>
-    
-    <bean id="aggregationProcessor" class="com.ads.apiseng.handlers.SimpleHandler">
-        <constructor-arg value="AGGREGATION-PROCESSOR"/>
-    </bean>
+
+    <!-- LOG AGGREGATED RESULT -->
+    <int:logging-channel-adapter channel="aggregatedResultChannel"
+                                 level="INFO"
+                                 expression="'[AGGREGATION-PROCESSOR] received: ' + payload"/>
+
+    <!-- REPLY FOR AGGREGATOR HTTP -->
+    <int:transformer input-channel="aggregatedResultChannel"
+                     output-channel="aggregatorReplyChannel"
+                     expression="'Aggregated: ' + payload"/>
 
     <!-- SCATTER-GATHER PATTERN -->
-    <int:service-activator input-channel="scatterPubSubChannel"
-                           output-channel="gatherChannel"
-                           ref="processorA"
-                           method="handle"/>
-    <int:service-activator input-channel="scatterPubSubChannel"
-                           output-channel="gatherChannel"
-                           ref="processorB"
-                           method="handle"/>
-    <int:service-activator input-channel="scatterPubSubChannel"
-                           output-channel="gatherChannel"
-                           ref="processorC"
-                           method="handle"/>
-    
-    <bean id="processorA" class="com.ads.apiseng.handlers.SimpleHandler">
-        <constructor-arg value="PROCESSOR-A"/>
-    </bean>
-    <bean id="processorB" class="com.ads.apiseng.handlers.SimpleHandler">
-        <constructor-arg value="PROCESSOR-B"/>
-    </bean>
-    <bean id="processorC" class="com.ads.apiseng.handlers.SimpleHandler">
-        <constructor-arg value="PROCESSOR-C"/>
-    </bean>
+    <int:logging-channel-adapter channel="scatterPubSubChannel"
+                                 level="INFO"
+                                 expression="'[SCATTER-GATHER] scatter: ' + payload"/>
+
+    <int:transformer input-channel="scatterPubSubChannel"
+                     output-channel="gatherChannel"
+                     expression="'Processed by scatter: ' + payload"/>
+
+    <!-- LOG GATHERED RESULTS -->
+    <int:logging-channel-adapter channel="gatherChannel"
+                                 level="INFO"
+                                 expression="'[SCATTER-GATHER] gather: ' + payload"/>
 
     <!-- FILE INTEGRATION -->
     <int-file:inbound-channel-adapter id="fileInputAdapter"
@@ -84,34 +76,25 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
                                       auto-startup="true">
         <int:poller fixed-delay="5000"/>
     </int-file:inbound-channel-adapter>
-    
-    <int:service-activator input-channel="fileInputChannel"
-                           output-channel="fileProcessingChannel"
-                           ref="fileProcessor"
-                           method="handle"/>
-    
-    <bean id="fileProcessor" class="com.ads.apiseng.handlers.SimpleHandler">
-        <constructor-arg value="FILE-PROCESSOR"/>
-    </bean>
-    
+
+    <int:logging-channel-adapter channel="fileInputChannel"
+                                 level="INFO"
+                                 expression="'[FILE-PROCESSOR] received: ' + payload"/>
+
     <int:transformer id="fileContentTransformer"
-                     input-channel="fileProcessingChannel"
+                     input-channel="fileInputChannel"
                      output-channel="fileOutputChannel"
                      expression="'PROCESSED: ' + payload"/>
-    
+
     <int-file:outbound-channel-adapter id="fileOutputAdapter"
                                        directory="/tmp/output"
                                        channel="fileOutputChannel"
                                        filename-generator-expression="'processed-' + T(System).currentTimeMillis() + '.txt'"/>
 
     <!-- RETRY PATTERN (SIMPLIFIED) -->
-    <int:service-activator input-channel="retryChannel"
-                           ref="flakyService"
-                           method="handle"/>
-    
-    <bean id="flakyService" class="com.ads.apiseng.handlers.SimpleHandler">
-        <constructor-arg value="FLAKY-SERVICE"/>
-    </bean>
+    <int:logging-channel-adapter channel="retryChannel"
+                                 level="INFO"
+                                 expression="'[FLAKY-SERVICE] received: ' + payload"/>
 
     <!-- CONTROL BUS -->
     <int:control-bus id="controlBus" 
@@ -121,16 +104,19 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
     <int-http:inbound-gateway id="aggregationTestEndpoint"
                               supported-methods="POST"
                               request-channel="aggregationInputChannel"
+                              reply-channel="aggregatorReplyChannel"
                               path="/api/advanced/aggregate"/>
-    
+
     <int-http:inbound-gateway id="scatterGatherTestEndpoint"
                               supported-methods="POST"
                               request-channel="scatterPubSubChannel"
+                              reply-channel="gatherChannel"
                               path="/api/advanced/scatter-gather"/>
-    
+
     <int-http:inbound-gateway id="retryTestEndpoint"
                               supported-methods="POST"
                               request-channel="retryChannel"
+                              reply-channel="retryChannel"
                               path="/api/advanced/retry"/>
 
     <int-http:inbound-gateway id="controlHttpGateway"
