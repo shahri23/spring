@@ -19,9 +19,134 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
            http://www.springframework.org/schema/integration/http
            https://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
 
+    <!-- BASIC + PUBSUB FLOWS -->
+    <!-- Basic Channels -->
+    <int:channel id="inputChannel"/>
+    <int:channel id="validationChannel"/>
+    <int:channel id="invalidMessageChannel"/>
+    <int:publish-subscribe-channel id="processedChannel"/>
+
+    <!-- Basic Enricher, Filter, Transformer -->
+    <int:enricher input-channel="inputChannel"
+                  output-channel="validationChannel">
+        <int:header name="enrichedTimestamp" expression="T(System).currentTimeMillis()"/>
+        <int:header name="correlationId" expression="T(java.util.UUID).randomUUID().toString()"/>
+        <int:header name="source" expression="'EIP-BASIC-DEMO'"/>
+        <int:header name="stage" expression="'ENRICHED'"/>
+    </int:enricher>
+    <int:filter input-channel="validationChannel"
+                output-channel="transformationChannel"
+                discard-channel="invalidMessageChannel"
+                expression="payload != null and payload.toString().trim().length() > 0"/>
+    <int:transformer input-channel="transformationChannel"
+                     output-channel="processedChannel"
+                     expression="'PROCESSED: ' + payload.toString().toUpperCase()"/>
+    <int:logging-channel-adapter channel="processedChannel"
+                                 level="INFO"
+                                 expression="payload"/>
+    <int:logging-channel-adapter channel="invalidMessageChannel"
+                                 level="ERROR"
+                                 log-full-message="true"/>
+    <int-http:inbound-gateway id="httpEndpoint"
+                              supported-methods="POST"
+                              request-channel="inputChannel"
+                              reply-channel="processedChannel"
+                              path="/api/basic-transform"
+                              reply-timeout="3000"/>
+
+    <!-- PubSub/Routing Channels -->
+    <int:channel id="routingInputChannel"/>
+    <int:channel id="jsonRoutingChannel"/>
+    <int:channel id="xmlRoutingChannel"/>
+    <int:channel id="csvRoutingChannel"/>
+    <int:channel id="defaultRoutingChannel"/>
+    <int:channel id="csvItemChannel"/>
+    <int:channel id="csvStringChannel"/>
+    <int:channel id="defaultStringChannel"/>
+    <int:publish-subscribe-channel id="orderEventChannel" task-executor="routingAsyncExecutor"/>
+    <int:publish-subscribe-channel id="inventoryEventChannel" task-executor="routingAsyncExecutor"/>
+    <bean id="routingAsyncExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="2"/>
+        <property name="maxPoolSize" value="5"/>
+        <property name="queueCapacity" value="25"/>
+        <property name="threadNamePrefix" value="EIP-Router-"/>
+    </bean>
+    <int:router id="contentBasedRouter"
+                input-channel="routingInputChannel"
+                expression="payload.toString().trim().startsWith('{') ? 'jsonRoutingChannel' : (payload.toString().trim().startsWith('&lt;') ? 'xmlRoutingChannel' : (payload.toString().contains(',') ? 'csvRoutingChannel' : 'defaultRoutingChannel'))"/>
+    <int:transformer input-channel="jsonRoutingChannel"
+                     output-channel="orderEventChannel"
+                     expression="new java.lang.String(payload, 'UTF-8')"/>
+    <int:transformer input-channel="xmlRoutingChannel"
+                     output-channel="inventoryEventChannel"
+                     expression="new java.lang.String(payload, 'UTF-8')"/>
+    <int:transformer input-channel="csvRoutingChannel"
+                     output-channel="csvStringChannel"
+                     expression="payload instanceof T(java.lang.String) ? payload : new java.lang.String(payload, 'UTF-8')"/>
+    <int:splitter input-channel="csvStringChannel"
+                  output-channel="csvItemChannel"
+                  expression="payload.toString().split(',')"
+                  apply-sequence="true"/>
+    <int:logging-channel-adapter channel="csvItemChannel"
+                                 level="INFO"
+                                 expression="'[CSV-ITEM-PROCESSOR] received: ' + payload"/>
+    <int:transformer input-channel="csvItemChannel"
+                     output-channel="inventoryEventChannel"
+                     expression="'ITEM: ' + payload"/>
+
+    <int:logging-channel-adapter channel="orderEventChannel"
+                                 level="INFO"
+                                 expression="'[ORDER-SERVICE] received: ' + payload"/>
+    <int:logging-channel-adapter channel="orderEventChannel"
+                                 level="INFO"
+                                 expression="'[AUDIT-SERVICE] received: ' + payload"/>
+    <int:logging-channel-adapter channel="orderEventChannel"
+                                 level="INFO"
+                                 expression="'[EMAIL-SERVICE] received: ' + payload"/>
+    <int:logging-channel-adapter channel="orderEventChannel"
+                                 level="INFO"
+                                 expression="'[ANALYTICS-SERVICE] received: ' + payload"/>
+    <int:transformer input-channel="orderEventChannel"
+                     output-channel="orderReplyChannel"
+                     expression="'Order processed: ' + payload"/>
+    <int:channel id="orderReplyChannel"/>
+    <int:logging-channel-adapter channel="inventoryEventChannel"
+                                 level="INFO"
+                                 expression="'[INVENTORY-SERVICE] received: ' + payload"/>
+    <int:logging-channel-adapter channel="inventoryEventChannel"
+                                 level="INFO"
+                                 expression="'[WAREHOUSE-SERVICE] received: ' + payload"/>
+    <int:logging-channel-adapter channel="inventoryEventChannel"
+                                 level="INFO"
+                                 expression="'[AUDIT-SERVICE] received: ' + payload"/>
+    <int:transformer input-channel="inventoryEventChannel"
+                     output-channel="inventoryReplyChannel"
+                     expression="'Inventory processed: ' + payload"/>
+    <int:channel id="inventoryReplyChannel"/>
+    <int:transformer input-channel="defaultRoutingChannel"
+                     output-channel="defaultStringChannel"
+                     expression="new java.lang.String(payload, 'UTF-8')"/>
+    <int:logging-channel-adapter channel="defaultStringChannel"
+                                 level="INFO"
+                                 expression="'[DEFAULT-HANDLER] received: ' + payload"/>
+    <int-http:inbound-gateway id="orderHttpEndpoint"
+                              supported-methods="POST"
+                              request-channel="jsonRoutingChannel"
+                              reply-channel="orderReplyChannel"
+                              path="/api/orders"/>
+    <int-http:inbound-gateway id="inventoryHttpEndpoint"
+                              supported-methods="POST"
+                              request-channel="xmlRoutingChannel"
+                              reply-channel="inventoryReplyChannel"
+                              path="/api/inventory"/>
+    <int-http:inbound-gateway id="batchHttpEndpoint"
+                              supported-methods="POST"
+                              request-channel="csvRoutingChannel"
+                              reply-channel="inventoryReplyChannel"
+                              path="/api/batch"/>
+
     <!-- ADVANCED PATTERN CHANNELS -->
     <int:channel id="aggregationInputChannel"/>
-    <int:channel id="aggregatorReplyChannel"/>
     <int:channel id="aggregatedResultChannel"/>
     <int:publish-subscribe-channel id="scatterPubSubChannel"/>
     <int:channel id="gatherChannel"/>
@@ -117,7 +242,8 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
                               supported-methods="POST"
                               request-channel="aggregationInputChannel"
                               reply-channel="aggregatorReplyChannel"
-                              path="/api/advanced/aggregate"/>
+                              path="/api/advanced/aggregate"
+                              mapped-request-headers="correlationId"/>
 
     <int-http:inbound-gateway id="scatterGatherTestEndpoint"
                               supported-methods="POST"
