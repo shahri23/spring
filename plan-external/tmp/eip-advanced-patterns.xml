@@ -160,11 +160,11 @@ EIP DEMO FILE 3: ADVANCED ENTERPRISE INTEGRATION PATTERNS (SIMPLIFIED)
     <bean id="messageStore" 
           class="org.springframework.integration.store.SimpleMessageStore"/>
 
-    <!-- AGGREGATOR PATTERN -->
+    <!-- AGGREGATOR PATTERN - FIXED: using lowercase 'correlationid' -->
     <int:aggregator id="orderAggregator"
                     input-channel="aggregationInputChannel"
                     output-channel="aggregatedResultChannel"
-                    correlation-strategy-expression="headers['correlationId']"
+                    correlation-strategy-expression="headers['correlationid']"
                     release-strategy-expression="size() >= 3 or T(System).currentTimeMillis() - timestamp > 10000"
                     message-store="messageStore"
                     send-partial-result-on-expiry="true"
