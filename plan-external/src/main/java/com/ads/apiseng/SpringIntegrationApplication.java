@@ -7,9 +7,10 @@ import org.springframework.context.annotation.ImportResource;
 
 @SpringBootApplication
 @ImportResource({
-    //"file:./tmp/eip-basic-transforms.xml",
-    //"file:./tmp/eip-routing-pubsub.xml"
+    // "file:./tmp/eip-basic-transforms.xml",
+    // "file:./tmp/eip-routing-pubsub.xml",
     "file:./tmp/eip-advanced-patterns.xml"
+    // "file:./tmp/combined.xml"
 })
 public class SpringIntegrationApplication {
 

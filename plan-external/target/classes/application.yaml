@@ -1,23 +1,14 @@
 spring:
+  output:
+    ansi:
+      enabled: ALWAYS  # Enable colorized console logs
+  jackson:
+    serialization:
+      indent-output: true  # Pretty-print JSON responses
   integration:
-    xml:
-      locations:
-        - optional:file:./tmp/eip-basic-transforms.xml
-        - optional:file:./tmp/eip-routing-pubsub.xml
-        - optional:file:./tmp/eip-advanced-patterns.xml
+    logging:
+      pretty-print: true  # Pretty-print Spring Integration message payloads
 
-# Simplified logging to reduce overhead
 logging:
-  level:
-    org.springframework.integration: INFO
-    com.ads.apiseng: DEBUG
-    root: WARN
   pattern:
-    console: "%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-
-# Reduce memory usage
-server:
-  port: 8080
-  tomcat:
-    max-threads: 10
-    min-spare-threads: 2
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr([%t]){cyan} %clr(%-40.40logger{39}){green} : %m%n%wEx"
