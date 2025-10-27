@@ -18,6 +18,7 @@
     <!-- ========================================================= -->
     <int:channel id="inputChannel"/>
     <int:channel id="validationChannel"/>
+    <int:channel id="transformationChannel"/>
     <int:channel id="invalidMessageChannel"/>
     <int:publish-subscribe-channel id="processedChannel"/>
 
@@ -65,10 +66,15 @@
     <int:channel id="csvItemChannel"/>
     <int:channel id="csvStringChannel"/>
     <int:channel id="defaultStringChannel"/>
+    <int:channel id="csvAggregationChannel"/>
+    <int:channel id="csvReplyChannel"/>
 
-    <!-- PUB/SUB CHANNELS -->
+    <!-- PUB/SUB CHANNELS (NO REPLY) -->
     <int:publish-subscribe-channel id="orderEventChannel" task-executor="routingAsyncExecutor"/>
     <int:publish-subscribe-channel id="inventoryEventChannel" task-executor="routingAsyncExecutor"/>
+
+    <!-- MESSAGE STORE FOR AGGREGATION -->
+    <bean id="csvMessageStore" class="org.springframework.integration.store.SimpleMessageStore"/>
 
     <!-- ASYNC EXECUTOR -->
     <bean id="routingAsyncExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
@@ -85,7 +91,7 @@
                            (payload.toString().trim().startsWith('&lt;') ? 'xmlRoutingChannel' :
                            (payload.toString().contains(',') ? 'csvRoutingChannel' : 'defaultRoutingChannel'))"/>
 
-    <!-- JSON / XML / CSV transformers -->
+    <!-- JSON / XML transformers -->
     <int:transformer input-channel="jsonRoutingChannel"
                      output-channel="orderEventChannel"
                      expression="new java.lang.String(payload, 'UTF-8')"/>
@@ -94,27 +100,67 @@
                      output-channel="inventoryEventChannel"
                      expression="new java.lang.String(payload, 'UTF-8')"/>
 
+    <!-- CSV PROCESSING WITH AGGREGATION -->
     <int:transformer input-channel="csvRoutingChannel"
                      output-channel="csvStringChannel"
                      expression="payload instanceof T(java.lang.String) ? payload : new java.lang.String(payload, 'UTF-8')"/>
 
-    <!-- CSV PROCESSING -->
+    <!-- SPLITTER: Split CSV into individual items -->
     <int:splitter input-channel="csvStringChannel"
                   output-channel="csvItemChannel"
                   expression="payload.toString().split(',')"
                   apply-sequence="true"/>
 
-    <!-- LOG EACH CSV ITEM -->
-    <int:logging-channel-adapter channel="csvItemChannel"
+    <!-- TRANSFORM AND SEND TO PUB/SUB CHANNEL -->
+    <int:transformer input-channel="csvItemChannel"
+                     output-channel="csvPubSubChannel"
+                     expression="'ITEM: ' + payload.toString().trim()"/>
+
+    <!-- PUB/SUB CHANNEL FOR CSV ITEMS -->
+    <int:publish-subscribe-channel id="csvPubSubChannel"/>
+
+    <!-- LOG EACH CSV ITEM (SUBSCRIBER 1) -->
+    <int:logging-channel-adapter channel="csvPubSubChannel"
                                  level="INFO"
                                  expression="'[CSV-ITEM-PROCESSOR] received: ' + payload"/>
 
-    <!-- TRANSFORM CSV ITEMS FOR PUB/SUB SUBSCRIBERS -->
-    <int:transformer input-channel="csvItemChannel"
-                     output-channel="inventoryEventChannel"
-                     expression="'ITEM: ' + payload"/>
+    <!-- INVENTORY SERVICE (SUBSCRIBER 2) -->
+    <int:logging-channel-adapter channel="csvPubSubChannel"
+                                 level="INFO"
+                                 expression="'[INVENTORY-SERVICE] received: ' + payload"/>
 
-    <!-- ORDER EVENT SUBSCRIBERS -->
+    <!-- WAREHOUSE SERVICE (SUBSCRIBER 3) -->
+    <int:logging-channel-adapter channel="csvPubSubChannel"
+                                 level="INFO"
+                                 expression="'[WAREHOUSE-SERVICE] received: ' + payload"/>
+
+    <!-- AUDIT SERVICE (SUBSCRIBER 4) -->
+    <int:logging-channel-adapter channel="csvPubSubChannel"
+                                 level="INFO"
+                                 expression="'[AUDIT-SERVICE] received: ' + payload"/>
+
+    <!-- AGGREGATOR (SUBSCRIBER 5) - Collects for reply -->
+    <int:service-activator input-channel="csvPubSubChannel"
+                           output-channel="csvAggregationChannel"
+                           expression="payload"/>
+
+    <!-- AGGREGATOR: Collect all CSV items back together -->
+    <int:aggregator input-channel="csvAggregationChannel"
+                    output-channel="csvReplyChannel"
+                    correlation-strategy-expression="headers.correlationId"
+                    release-strategy-expression="size() == messages[0].headers.sequenceSize"
+                    message-store="csvMessageStore"
+                    send-timeout="5000"
+                    expire-groups-upon-completion="true"/>
+
+    <!-- FORMAT AGGREGATED RESPONSE -->
+    <int:transformer input-channel="csvReplyChannel"
+                     output-channel="batchFinalReplyChannel"
+                     expression="'Batch processed ' + payload.size() + ' items: ' + payload.toString()"/>
+
+    <int:channel id="batchFinalReplyChannel"/>
+
+    <!-- ORDER EVENT SUBSCRIBERS (NO REPLY) -->
     <int:logging-channel-adapter channel="orderEventChannel"
                                  level="INFO"
                                  expression="'[ORDER-SERVICE] received: ' + payload"/>
@@ -127,13 +173,14 @@
     <int:logging-channel-adapter channel="orderEventChannel"
                                  level="INFO"
                                  expression="'[ANALYTICS-SERVICE] received: ' + payload"/>
-    <!-- ORDER REPLY -->
+    
+    <!-- ORDER REPLY (SINGLE REPLY FROM PUB/SUB) -->
     <int:transformer input-channel="orderEventChannel"
                      output-channel="orderReplyChannel"
                      expression="'Order processed: ' + payload"/>
     <int:channel id="orderReplyChannel"/>
 
-    <!-- INVENTORY EVENT SUBSCRIBERS -->
+    <!-- INVENTORY EVENT SUBSCRIBERS (NO REPLY) -->
     <int:logging-channel-adapter channel="inventoryEventChannel"
                                  level="INFO"
                                  expression="'[INVENTORY-SERVICE] received: ' + payload"/>
@@ -143,7 +190,8 @@
     <int:logging-channel-adapter channel="inventoryEventChannel"
                                  level="INFO"
                                  expression="'[AUDIT-SERVICE] received: ' + payload"/>
-    <!-- INVENTORY REPLY -->
+    
+    <!-- INVENTORY REPLY (SINGLE REPLY FROM PUB/SUB) -->
     <int:transformer input-channel="inventoryEventChannel"
                      output-channel="inventoryReplyChannel"
                      expression="'Inventory processed: ' + payload"/>
@@ -162,17 +210,21 @@
                               supported-methods="POST"
                               request-channel="jsonRoutingChannel"
                               reply-channel="orderReplyChannel"
-                              path="/api/orders"/>
+                              path="/api/orders"
+                              reply-timeout="5000"/>
 
     <int-http:inbound-gateway id="inventoryHttpEndpoint"
                               supported-methods="POST"
                               request-channel="xmlRoutingChannel"
                               reply-channel="inventoryReplyChannel"
-                              path="/api/inventory"/>
+                              path="/api/inventory"
+                              reply-timeout="5000"/>
 
+    <!-- BATCH ENDPOINT WITH AGGREGATED REPLY -->
     <int-http:inbound-gateway id="batchHttpEndpoint"
                               supported-methods="POST"
                               request-channel="csvRoutingChannel"
-                              reply-channel="inventoryReplyChannel"
-                              path="/api/batch"/>
+                              reply-channel="batchFinalReplyChannel"
+                              path="/api/batch"
+                              reply-timeout="10000"/>
 </beans>
